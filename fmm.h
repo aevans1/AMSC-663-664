@@ -12,17 +12,17 @@ struct point
 	char label;
 	double U;	
 
-	int x;
-	int y;
-	int s;
+	double x;
+	double y;
+	double s;
 
 };
 
 ////Physical width and length of domain
-#define XMIN -3.5
-#define XMAX 3.5
-#define YMIN -0.7
-#define YMAX 0.7
+#define XMIN -1.0
+#define XMAX 1.0
+#define YMIN -1.0
+#define YMAX 1.0
 
 ////number of steps in x,y directions
 #define Nx 257
