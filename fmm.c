@@ -31,9 +31,10 @@ int main()
 		for (j = 0; j < Nx; j++)
 		{
 			A[i][j].label = '0'; //label all as 'Far'
-			A[i][j].s = 1; //speed function identically 1 currently
 			A[i][j].x = j;
 			A[i][j].y = i;
+			A[i][j].s = 1.0/(1 + 5*i + 20*j);
+			printf("s = %f \n",A[i][j].s);
 			A[i][j].U = INFTY;
 		}
 	}
@@ -50,50 +51,74 @@ int main()
 	count = 0;
 
 
-	//Define initial boundary
-	//
+	//Define initial boundary Gamma 
 	//Using two point sources:
+	double init[2][2]; //global coordinates of initial boundary in R^2
+	double temp;	
+	int row,col;
 
-	//Define point source
-	//Mark center as 'Known', set U to 0
-	int istart = Nx/2, jstart = Ny/2;
-	A[istart][jstart].label = '2';
-	A[istart][jstart].U = 0;
-
+	//set initial two points as (0,0) and (0.8,0)
+	int num_initial;
+	num_initial = 2;
+	init[0][0] = 0;
+	init[0][1] = 0;
+	init[1][0] = 0.8;
+	init[1][1] = 0;
+	
 	////////////////////////////////
 	/*Initialization of algorithm */
 	///////////////////////////////
-	
 	//Label all neighbors of Known points as Trial, update U values of Neighbors and add their U-values to heap
-	int neighbor[4][2] = {{istart+1, jstart},{istart-1,jstart},{istart,jstart+1},{istart,jstart-1}};	
+	
 	int new_row, new_col;
 	double h;	
-	for (i = 0; i < 4; i++)
+
+	for (i = 0; i < num_initial; i++)
 	{
-		new_row = neighbor[i][0];
-		new_col = neighbor[i][1];
+		//Find A array indices for inital coordinates, label as Known
+		temp = round((init[i][0] - XMIN)/hx);
+		col = temp;
+		temp = round((init[i][1] - YMIN)/hy);
+		row = temp;	
 
-		//use hy if row difference, hx if column difference
-		h = fabs( (new_row - istart)*hy + (new_col - jstart)*hx );
-
-		//Change neighbor of Known point to Trial Point, update value and add to
-		//heap
-		if (in_mesh(new_row,new_col))
+		printf("Row: %d, Col: %d \n",row,col);
+		A[row][col].label = '2';
+		A[row][col].U = 0.0;
+	}
+	
+	for (i = 0; i < num_initial; i++)
+	{
+		temp = round((init[i][0] - XMIN)/hx);
+		col = temp;
+		temp = round((init[i][1] - YMIN)/hy);
+		row = temp;	
+		for (j = 0; j < 4; j++)
 		{
-			A[new_row][new_col].label = '1';	
-			A[new_row][new_col].U = A[istart][jstart].U + h*A[new_row][new_col].s;		
-			add_heap(&heap[0],A[new_row][new_col],&count);
+			int	neighbor[4][2]= {{row+1, col},{row-1,col},{row,col+1},{row,col-1}};	
+
+			new_row = neighbor[j][1];
+			new_col = neighbor[j][0];
+	
+			//use hy if row difference, hx if column difference
+			h = fabs( (new_row - row)*hy + (new_col - col)*hx );
+	
+			//Change neighbor of Known point to Trial Point, update value and add to
+			//heap
+			if (in_mesh(new_row,new_col))
+			{
+				A[new_row][new_col].label = '1';	
+				A[new_row][new_col].U = A[row][col].U + h*A[new_row][new_col].s;
+				add_heap(&heap[0],A[new_row][new_col],&count);
+			}
 		}
 	}
 
-
+	
 	//////////////////
 	/*Main Loop     */
 	//////////////////
 	//Continue labelling Known points, Update Trial points, Searching for lowest U-values until mesh is done
 	struct point new_known;
-	int row;
-	int col;
 	double temp_update;
 
 	//continue until heap is empty	
@@ -135,31 +160,6 @@ int main()
 			}
 		}
 
-		//for (i = -1; i <= 1; i++)
-		//{
-		//	for (j = -1; j <= 1; j++)
-		//	{
-		//		//Check for boundary and if point is not Known
-		//		if (abs(i) + abs(j) == 1 && in_mesh(row + i, col +j) && A[row+i][col+j].label != '2')
-		//		//if (abs(i) + abs(j) == 1 && row + i >= 0 && row + i < Ny && col + j >= 0 && col + j < Nx && A[row+i][col+j].label != '2')
-		//		{
-		//			//printf("updating A[%d][%d] \n",row+i,col+j);	
-		//			temp_update = update(A[row+i][col+j],A,hx,hy);
-		//			if (temp_update < A[row+i][col+j].U)
-		//			{
-		//				A[row+i][col+j].U = temp_update; 
-		//			}
-		//
-		//			//Label as trial, add to heap if a Far point
-		//			if (A[row+i][col+j].label == '0')
-		//			{
-		//				A[row+i][col+j].label = '1';
-		//				add_heap(&heap[0],A[row+i][col+j],&count);
-		//			}
-		//		}
-		//	}
-		//}
-		//end neighbor search
 	}
 	// end main loop
 	
@@ -195,6 +195,7 @@ int main()
 	}
 	
 	free(heap);
+	
 }
 //End program
 
