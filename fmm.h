@@ -12,9 +12,10 @@ struct point
 	char label;
 	double U;	
 
-	int x;
-	int y;
-	int s;
+	int row;
+	int col;
+
+	double s;
 
 };
 

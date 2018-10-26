@@ -25,8 +25,8 @@ double update(struct point p, struct point *A[Ny],double hx, double hy)
 	double U_south;
 
 	//Store U value of point and coordinates of point
-	row = p.y;
-	col = p.x;
+	row = p.row;
+	col = p.col;
 	s = p.s;
 	
 	//printf("Updating A[%d][%d] \n",row,col);	

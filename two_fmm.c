@@ -4,10 +4,15 @@
 #include <stdlib.h>
 #include "fmm.h"
 
+//TODO: comments here
+
+
+
 /* Checks if array entry A[row][col] is in bounds of mesh Nx x Ny */
 int in_mesh(int row, int col)
 {
 	int in_mesh = 0;	
+	
 	if (row >= 0 && row < Ny && col >=  0 && col < Nx)
 	{
 		in_mesh = 1;
@@ -15,35 +20,14 @@ int in_mesh(int row, int col)
 	return in_mesh;
 }
 
-struct vect
-{
-	double x;
-	double y;
-};
-
-void get_coord(int row, int col, double hx, double hy, struct vect *v, struct point *A[Ny])
-{
-	v->x = XMIN + col*hx;
-	v->y = YMIN + row*hy;
-}
-
-void get_meshindex(int *row, int *col, double hx, double hy, struct vect v)
-{
-	*row = (v.y - YMIN)/hy;
-	*col = (v.x - XMIN)/hx;
-}
-
 int main()
 {
 	int i,j;
-	
+
 	//Define stepsizes, heap for Trial U values, count for iteration number
-	double hx, hy;
+	long double hx, hy;
 	hx = (XMAX - XMIN)/(Nx - 1);
 	hy = (YMAX - YMIN)/(Ny - 1);	
-
-	//TESTING:
-	struct vect v;
 
 	//Initialize Domain
 	struct point  *A[Ny];
@@ -57,14 +41,15 @@ int main()
 		for (j = 0; j < Nx; j++)
 		{
 			A[i][j].label = '0'; //label all as 'Far'
-			A[i][j].s = 1; //speed function identically 1 currently
-			A[i][j].row = i;
-			A[i][j].col = j;
-			//get_coord(A[i][j].row,A[i][j].col,hx,hy,&v,A);
-			//printf("v.x: %f v.y: %f \n",v.x,v.y);
+			A[i][j].x = XMIN + hy*j;
+			A[i][j].y = YMIN + hx*i;
+			A[i][j].s = 1;
+			//A[i][j].s = 1.0/(2.0 + 5.0*A[i][j].x + 20.0*A[i][j].y);
+			//printf("s = %f \n",A[i][j].s);
 			A[i][j].U = INFTY;
 		}
 	}
+
 	struct point *heap;
 	heap = (struct point*)malloc(Nx*Ny*sizeof(struct point));
 
@@ -72,85 +57,91 @@ int main()
 	count = 0;
 
 
-	//Define initial boundary
-	//
+	//Define initial boundary Gamma 
 	//Using two point sources:
+	long double init[2][2]; //global coordinates of initial boundary in R^2
+	long double temp;	
+	int row,col;
 
-	//Define point source
-	//Mark center as 'Known', set U to 0
-	
-	
-//TESTING	
-	//int istart = Nx/2, jstart = Ny/2;
-	//A[istart][jstart].label = '2';
-	//A[istart][jstart].U = 0;
-
-	//make array of initial coords for boundary
+	//set initial two points as (0,0) and (0.8,0)
 	int num_initial;
-	num_initial = 1;
-	struct vect init[num_initial];
-	init[0].x = 0.0;
-	init[0].y = 0.0;
-
+	num_initial = 1;	
+	init[0][0] = 0.0;
+	init[0][1] = 0.0;
+	
+	//num_initial = 2;
+	//init[0][0] = 0.0;
+	//init[0][1] = 0.0;
+	//init[1][0] = 0.8;
+	//init[1][1] = 0.0;
+	
 	////////////////////////////////
 	/*Initialization of algorithm */
 	///////////////////////////////
-	
 	//Label all neighbors of Known points as Trial, update U values of Neighbors and add their U-values to heap
-	//int neighbor[4][2] = {{istart+1, jstart},{istart-1,jstart},{istart,jstart+1},{istart,jstart-1}};	
-	int row, col, new_row, new_col;
-	double h;
-	//int neighbor[4][2];
+	
+	int new_row, new_col;
+	long double h;	
 
-	for(i = 0; i < num_initial; i++)
+	for (i = 0; i < num_initial; i++)
 	{
-		get_meshindex(&row, &col, hx, hy, init[i]);
-		
+		//Find A array indices for inital coordinates, label as Known
+		temp = round((init[i][0] - XMIN)/hy);
+		row = temp;
+		temp = round((init[i][1] - YMIN)/hx);
+		col = temp;	
+
+		printf("Row: %d, Col: %d \n",row,col);
 		A[row][col].label = '2';
 		A[row][col].U = 0.0;
 	}
-
-	for(i = 0; i < num_initial; i++)
-	{
-		get_meshindex(&row, &col, hx, hy, init[i]);
 	
+	for (i = 0; i < num_initial; i++)
+	{
+		temp = round((init[i][0] - XMIN)/hy);
+		row = temp;
+		temp = round((init[i][1] - YMIN)/hx);
+		col = temp;	
+
 		for (j = 0; j < 4; j++)
 		{
 			int	neighbor[4][2]= {{row+1, col},{row-1,col},{row,col+1},{row,col-1}};	
-			
-			new_row = neighbor[i][0];
-			new_col = neighbor[i][1];
 
+			new_row = neighbor[j][0];
+			new_col = neighbor[j][1];
+	
 			//use hy if row difference, hx if column difference
 			h = fabs( (new_row - row)*hy + (new_col - col)*hx );
-
+	
 			//Change neighbor of Known point to Trial Point, update value and add to
 			//heap
 			if (in_mesh(new_row,new_col))
 			{
 				A[new_row][new_col].label = '1';	
-				A[new_row][new_col].U = A[row][col].U + h*A[new_row][new_col].s;		
+				A[new_row][new_col].U = A[row][col].U + h*A[new_row][new_col].s;
 				add_heap(&heap[0],A[new_row][new_col],&count);
 			}
 		}
-	}	
+	}
 
+	
 	//////////////////
 	/*Main Loop     */
 	//////////////////
 	//Continue labelling Known points, Update Trial points, Searching for lowest U-values until mesh is done
 	struct point new_known;
-	//int row;
-	//int col;
-	double temp_update;
+	long double temp_update;
 
 	//continue until heap is empty	
 	while (count > 0)
 	{
 		//find point with lowest U value, label as known
 		new_known = pop_heap(&heap[0],&count);
-		row = new_known.row;
-		col = new_known.col;
+		
+		temp = round((new_known.x - XMIN)/hy);
+		row = temp;
+		temp = round((new_known.y - YMIN)/hx);
+		col = temp;	
 		
 		//printf("new_known: A[%d][%d] = %f \n",row,col,new_known.U);	
 		A[row][col].label = '2';
@@ -183,6 +174,7 @@ int main()
 				}
 			}
 		}
+
 	}
 	// end main loop
 	
@@ -190,16 +182,18 @@ int main()
 	
 	FILE *fid;
 	fid = fopen("U.txt","w");
-	double tmp,aux_x,aux_y,max_err = 0,err;
+	long double tmp,tmp1,tmp2,aux_x,aux_y,max_err = 0,err,s;
 	for (i = 0; i < Ny; i++)
 	{
-		aux_y = YMIN + hy*i;
+		aux_y = YMIN + hx*i;
 		for (j = 0; j < Nx; j++)
 		{
-// 			printf("%0.2f ",A[i][j].U);
 			fprintf(fid,"%.6e\t",A[i][j].U);
-			aux_x = XMIN + hx*j;
-			tmp = sqrt(aux_x*aux_x + aux_y*aux_y);
+			aux_x = XMIN + hy*j;
+			s = 1.0/(2.0 + 5.0*aux_x + 20.0*aux_y);
+			tmp1 = (1.0/sqrt(425.0))*acosh(1.0 + 0.5*0.5*s*425.0*((aux_x - 0)*(aux_x-0) + (aux_y - 0)*(aux_y - 0)));
+			tmp2 = (1.0/sqrt(425.0))*acosh(1.0 + (1.0/6.0)*0.5*s*425.0*((aux_x - 0.8)*(aux_x-0.8) + (aux_y - 0)*(aux_y - 0)));
+			tmp = fmin(tmp1,tmp2);
 			err = A[i][j].U - tmp;
 			if( err > max_err ) max_err = err;
 		}
@@ -218,6 +212,7 @@ int main()
 	}
 	
 	free(heap);
+	
 }
 //End program
 
