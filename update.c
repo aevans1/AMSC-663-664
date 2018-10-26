@@ -9,20 +9,19 @@
 //input point p to update,
 //array of poitns A(Ny is a global macro in points.h)
 //hx, hy stepsizes
-
-double update(struct point p, struct point *A[Ny],double hx, double hy)
+long double update(struct point p, struct point *A[Ny],long double hx, long double hy)
 {
 	int i;
 	int j;
 	int row;
 	int col;
-	double s;
+	long double s;
 
-	double U;
-	double U_east;
-	double U_west;
-	double U_north;
-	double U_south;
+	long double U;
+	long double U_east;
+	long double U_west;
+	long double U_north;
+	long double U_south;
 
 	//Store U value of point and coordinates of point
 	row = p.y;
@@ -80,17 +79,17 @@ double update(struct point p, struct point *A[Ny],double hx, double hy)
 	}
 
 	//values for calculating quadratic for 2 point update
-	double a;
-	double b;
-	double c;
-	double roots[2];
+	long double a;
+	long double b;
+	long double c;
+	long double roots[2];
 
 	//U value and neighboring update values
-	double U_new;
-	double U_ne;
-	double U_nw;
-	double U_se;
-	double U_sw;
+	long double U_new;
+	long double U_ne;
+	long double U_nw;
+	long double U_se;
+	long double U_sw;
 
 	//////Solve for NE quadrant(See Vladimirsky paper)
 	a = hx*hx + hy*hy;
