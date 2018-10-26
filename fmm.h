@@ -10,18 +10,18 @@
 struct point
 {
 	char label;
-	double U;	
+	long double U;	
 
-	double x;
-	double y;
-	double s;
+	long double x;
+	long double y;
+	long double s;
 
 };
 
 ////Physical width and length of domain
-#define XMIN -1.0
+#define XMIN 0.0
 #define XMAX 1.0
-#define YMIN -1.0
+#define YMIN 0.0
 #define YMAX 1.0
 
 ////number of steps in x,y directions
@@ -38,8 +38,8 @@ void add_heap(struct point *heap, struct point p, int *count);
 struct point pop_heap(struct point *heap, int *count);
 
 //Declaring update function
-double update(struct point p, struct point **A, double hx, double hy);
+long double update(struct point p, struct point **A, long double hx, long double hy);
 
 //Declare quadratic function
-void solve_quadratic(double a, double b, double c, double *roots);
+void solve_quadratic(long double a, long double b, long double c, long double *roots);
 

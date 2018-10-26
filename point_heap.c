@@ -50,7 +50,7 @@ void add_heap(struct point *heap, struct point p, int *count)
 	//only check for parents if there are parents in the heap!
 	if (*count > 0)
 	{
-		double temp_parent; // double for checking on negative values of parent indices
+		long double temp_parent; // long double for checking on negative values of parent indices
 		int parent;
 		int current;
 
@@ -191,15 +191,15 @@ struct point pop_heap(struct point *heap, int *count)
 	//k = 3; //number of tree levels
 	//N = pow(2,k) - 1; //number of nodes in tree, k = 1 is root
 
-	//double my_heap[N];
-	//double my_doubles[N];
+	//long double my_heap[N];
+	//long double my_long doubles[N];
 
-//In//itialize Random double array
+//In//itialize Random long double array
 	//srand( time(NULL) );
 	//
 	//for (i = 0; i < N;i++)
 	//{	
-	//	my_doubles[i] = rand();
+	//	my_long doubles[i] = rand();
 	//}
 
 	//int count;
@@ -208,7 +208,7 @@ struct point pop_heap(struct point *heap, int *count)
 //Fi//lling heap	
 	//for (i = 0; i < N; i++)
 	//{
-	//	add_heap(&my_heap[0],my_doubles[i],&count);
+	//	add_heap(&my_heap[0],my_long doubles[i],&count);
 	//}
 
 // Testing add_heap
