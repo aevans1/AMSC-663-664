@@ -65,11 +65,15 @@ int main()
 
 	//set initial two points as (0,0) and (0.8,0)
 	int num_initial;
-	num_initial = 2;
+	num_initial = 1;	
 	init[0][0] = 0.0;
 	init[0][1] = 0.0;
-	init[1][0] = 0.8;
-	init[1][1] = 0.0;
+	
+	//num_initial = 2;
+	//init[0][0] = 0.0;
+	//init[0][1] = 0.0;
+	//init[1][0] = 0.8;
+	//init[1][1] = 0.0;
 	
 	////////////////////////////////
 	/*Initialization of algorithm */
