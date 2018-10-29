@@ -29,14 +29,22 @@ struct vect
 typedef struct vect vect;
 
 ////Physical width and length of domain
-#define XMIN -3.5
-#define XMAX 3.5
-#define YMIN -0.7
-#define YMAX 0.7
+
+//One point source:
+//#define XMIN -3.5
+//#define XMAX 3.5
+//#define YMIN -0.7
+//#define YMAX 0.7
+
+//Two point sources:
+#define XMIN 0.0
+#define XMAX 1.0
+#define YMIN 0.0
+#define YMAX 1.0
 
 ////number of steps in x,y directions
-#define Nx 257
-#define Ny 257
+#define Nx 1029
+#define Ny 1029
 
 ////Max possible value for U, default for Far points
 #define INFTY 1e6
@@ -53,7 +61,7 @@ double update(struct point p, struct point *A[Ny], double hx, double hy);
 int in_mesh(int row, int col);
 void get_coord(int row, int col, double hx, double hy, vect *v);
 void get_meshindex(int *row, int *col, double hx, double hy, vect v);
-
+void get_neighbors(int neighbors[4][2],int row, int col);
 
 
 //Declare quadratic function
