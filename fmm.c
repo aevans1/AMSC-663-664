@@ -4,35 +4,12 @@
 #include <stdlib.h>
 #include "fmm.h"
 
-/* Checks if array entry A[row][col] is in bounds of mesh Nx x Ny */
-int in_mesh(int row, int col)
-{
-	int in_mesh = 0;	
-	if (row >= 0 && row < Ny && col >=  0 && col < Nx)
-	{
-		in_mesh = 1;
-	}
-	return in_mesh;
-}
 
-struct vect
-{
-	double x;
-	double y;
-};
-
-void get_coord(int row, int col, double hx, double hy, struct vect *v, struct point *A[Ny])
-{
-	v->x = XMIN + col*hx;
-	v->y = YMIN + row*hy;
-}
-
-void get_meshindex(int *row, int *col, double hx, double hy, struct vect v)
-{
-	*row = (v.y - YMIN)/hy;
-	*col = (v.x - XMIN)/hx;
-}
-
+////////////////////////////////////////////
+//Fast Marching Method for solving the eikonal equation ||grad U|| = s(x)
+//To change parameters, see header file fmm.h
+//To compile, type 'make' in command line
+///////////////////////////////////////////
 int main()
 {
 	int i,j;
@@ -43,13 +20,13 @@ int main()
 	hy = (YMAX - YMIN)/(Ny - 1);	
 
 	//TESTING:
-	struct vect v;
+	vect v;
 
 	//Initialize Domain
-	struct point  *A[Ny];
+	point  *A[Ny];
 	for (i = 0; i < Ny; i++)
 	{
-		A[i] = (struct point *)malloc(Ny*sizeof(struct point));
+		A[i] = (point *)malloc(Ny*sizeof(point));
 	}
 
 	for (i = 0; i < Ny; i++)
@@ -65,8 +42,8 @@ int main()
 			A[i][j].U = INFTY;
 		}
 	}
-	struct point *heap;
-	heap = (struct point*)malloc(Nx*Ny*sizeof(struct point));
+	point *heap;
+	heap = (point*)malloc(Nx*Ny*sizeof(point));
 
 	int count;
 	count = 0;
@@ -88,7 +65,7 @@ int main()
 	//make array of initial coords for boundary
 	int num_initial;
 	num_initial = 1;
-	struct vect init[num_initial];
+	vect init[num_initial];
 	init[0].x = 0.0;
 	init[0].y = 0.0;
 
@@ -139,7 +116,7 @@ int main()
 	/*Main Loop     */
 	//////////////////
 	//Continue labelling Known points, Update Trial points, Searching for lowest U-values until mesh is done
-	struct point new_known;
+	point new_known;
 	//int row;
 	//int col;
 	double temp_update;
