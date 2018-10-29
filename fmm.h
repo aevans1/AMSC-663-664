@@ -48,9 +48,10 @@ void add_heap(struct point *heap, struct point p, int *count);
 struct point pop_heap(struct point *heap, int *count);
 
 //Declaring all helper functions
-double update(struct point p, struct point **A, double hx, double hy);
+double update(struct point p, struct point *A[Ny], double hx, double hy);
+//double update(struct point p, struct point *A, double hx, double hy, int Nx, int Ny);
 int in_mesh(int row, int col);
-void get_coord(int row, int col, double hx, double hy, vect *v, point *A[Ny]);
+void get_coord(int row, int col, double hx, double hy, vect *v);
 void get_meshindex(int *row, int *col, double hx, double hy, vect v);
 
 
