@@ -7,9 +7,9 @@
 //Code for implementing a binary heap structure for struct 'points'
 //Oct. 13th, 2018
 
-void swap_point(struct point *p, struct point *q)
+void swap_point(point *p, point *q)
 {
-        struct point temp;
+        point temp;
         temp = *p;
         *p = *q;
         *q = temp;
@@ -17,7 +17,7 @@ void swap_point(struct point *p, struct point *q)
 
 
 //Print heap level by level, k-level heap with N elements
-void print_heap (struct point *heap, int k, int N)
+void print_heap (point *heap, int k, int N)
 {
 	int i;
 	int j;
@@ -41,7 +41,7 @@ void print_heap (struct point *heap, int k, int N)
 //Add new value to end of heap, re-balances heap
 //point is new value being added to heap
 //count is final index of heap after adding p
-void add_heap(struct point *heap, struct point p, int *count)
+void add_heap(point *heap, point p, int *count)
 {
 	int i;
 	//printf("adding %f \n",p);
@@ -113,10 +113,10 @@ void add_heap(struct point *heap, struct point p, int *count)
 //Remove top of heap, re-balances heap
 //point is new value being added to heap
 //count is final index of heap before rebalancing heap
-struct point pop_heap(struct point *heap, int *count)
+point pop_heap(point *heap, int *count)
 {
 	//top of the heap	
-	struct point root;
+	point root;
 	root = heap[0];
 	
 	//printf("popping: %f \n",root);

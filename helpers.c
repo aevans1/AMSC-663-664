@@ -3,14 +3,44 @@
 #include <time.h>
 #include <stdlib.h>
 #include "fmm.h"
-/*Find neighbors of point p in domain A
-  Compute neighbors and eikonal update */
 
+//////////////////////////////////////////////////////////
+/*Contains various helper functions for main file fmm.c */
+///////////////////////////////////////////////////////////
+
+/* Checks if array entry A[row][col] is in bounds of Ny x Nx mesh */
+//Note: currently uses global variables Nx,Ny, defined in header fmm.h
+int in_mesh(int row, int col)
+{
+	int in_mesh = 0;	
+	if (row >= 0 && row < Ny && col >=  0 && col < Nx)
+	{
+		in_mesh = 1;
+	}
+	return in_mesh;
+}
+
+/*given a mesh point with row,col number, returns x,y coords in input vector v*/
+////hx, hy are space steps in x,y direction
+void get_coord(int row, int col, double hx, double hy, vect *v, point *A[Ny])
+{
+	v->x = XMIN + col*hx;
+	v->y = YMIN + row*hy;
+}
+
+/*given a vector with x,y coords, returns mesh row, col vals in 'row','col'
+  pointers*/
+void get_meshindex(int *row, int *col, double hx, double hy, vect v)
+{
+	*row = (v.y - YMIN)/hy;
+	*col = (v.x - XMIN)/hx;
+}
+
+/*Find neighbors of point p in domain A Compute neighbors and eikonal update */
 //input point p to update,
-//array of poitns A(Ny is a global macro in points.h)
-//hx, hy stepsizes
-
-double update(struct point p, struct point *A[Ny],double hx, double hy)
+//array of points A, stepsizes hx,hy
+//Note: Ny is a global variable in points.h
+double update(point p, point *A[Ny],double hx, double hy)
 {
 	int i;
 	int j;

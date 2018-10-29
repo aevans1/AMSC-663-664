@@ -5,7 +5,7 @@
  -Point labels:
 	0 - Far
 	1 - Trial
-	2 - Accepted
+	2 - Known
 */
 struct point
 {
@@ -18,6 +18,15 @@ struct point
 	double s;
 
 };
+typedef struct point point;
+
+/*struct for containing (x,y) coordinates in R^2, a 2D vector*/
+struct vect
+{
+	double x;
+	double y;
+};
+typedef struct vect vect;
 
 ////Physical width and length of domain
 #define XMIN -3.5
@@ -38,8 +47,13 @@ void print_heap (struct point *heap, int k, int N);
 void add_heap(struct point *heap, struct point p, int *count);
 struct point pop_heap(struct point *heap, int *count);
 
-//Declaring update function
+//Declaring all helper functions
 double update(struct point p, struct point **A, double hx, double hy);
+int in_mesh(int row, int col);
+void get_coord(int row, int col, double hx, double hy, vect *v, point *A[Ny]);
+void get_meshindex(int *row, int *col, double hx, double hy, vect v);
+
+
 
 //Declare quadratic function
 void solve_quadratic(double a, double b, double c, double *roots);
