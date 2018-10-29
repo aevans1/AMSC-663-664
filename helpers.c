@@ -10,6 +10,23 @@
 
 /* Checks if array entry A[row][col] is in bounds of Ny x Nx mesh */
 //Note: currently uses global variables Nx,Ny, defined in header fmm.h
+
+
+void get_neighbors(int neighbors[4][2],int row, int col)
+{
+	neighbors[0][0] = row + 1;
+	neighbors[0][1] = col;
+	
+	neighbors[1][0] = row - 1;
+	neighbors[1][1] = col;
+	
+	neighbors[2][0] = row;
+	neighbors[2][1] = col + 1;
+	
+	neighbors[3][0] = row;
+	neighbors[3][1] = col - 1;
+}
+
 int in_mesh(int row, int col)
 //int in_mesh(int row, int col, int Nx, int Ny)
 {
@@ -19,8 +36,7 @@ int in_mesh(int row, int col)
 		in_mesh = 1;
 	}
 	return in_mesh;
-}
-
+}
 /*given a mesh point with row,col number, returns x,y coords in input vector v*/
 ////hx, hy are space steps in x,y direction
 void get_coord(int row, int col, double hx, double hy, vect *v)
