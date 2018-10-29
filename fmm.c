@@ -13,16 +13,22 @@
 int main()
 {
 	int i,j;
-	
+	vect v;
+
+	//int Nx,Ny;
+	//Nx = 257;	
+	//Ny = 257;
 	//Define stepsizes, heap for Trial U values, count for iteration number
 	double hx, hy;
 	hx = (XMAX - XMIN)/(Nx - 1);
 	hy = (YMAX - YMIN)/(Ny - 1);	
 
-	//TESTING:
-	vect v;
-
+	
 	//Initialize Domain
+	
+	//point *A;	
+	//A = (point*)malloc(Nx*Ny*sizeof(point));	
+	
 	point  *A[Ny];
 	for (i = 0; i < Ny; i++)
 	{
@@ -37,7 +43,7 @@ int main()
 			A[i][j].s = 1; //speed function identically 1 currently
 			A[i][j].row = i;
 			A[i][j].col = j;
-			//get_coord(A[i][j].row,A[i][j].col,hx,hy,&v,A);
+			//get_coord(A[i][j].row,A[i][j].col,hx,hy);
 			//printf("v.x: %f v.y: %f \n",v.x,v.y);
 			A[i][j].U = INFTY;
 		}
@@ -47,7 +53,6 @@ int main()
 
 	int count;
 	count = 0;
-
 
 	//Define initial boundary
 	//
@@ -74,7 +79,6 @@ int main()
 	///////////////////////////////
 	
 	//Label all neighbors of Known points as Trial, update U values of Neighbors and add their U-values to heap
-	//int neighbor[4][2] = {{istart+1, jstart},{istart-1,jstart},{istart,jstart+1},{istart,jstart-1}};	
 	int row, col, new_row, new_col;
 	double h;
 	//int neighbor[4][2];
@@ -145,6 +149,7 @@ int main()
 			if (in_mesh(new_row,new_col))
 			{
 				temp_update = update(A[new_row][new_col],A,hx,hy);
+				//temp_update = update(A[new_row][new_col],A,hx,hy);
 
 				//only update if it decreases the U-value
 				if (temp_update < A[new_row][new_col].U)
@@ -173,7 +178,8 @@ int main()
 		aux_y = YMIN + hy*i;
 		for (j = 0; j < Nx; j++)
 		{
-// 			printf("%0.2f ",A[i][j].U);
+ 			printf("%0.2f\n ",A[i][j].U);
+			//printf("%0.2f \n",*A(i*Nx + j).U);
 			fprintf(fid,"%.6e\t",A[i][j].U);
 			aux_x = XMIN + hx*j;
 			tmp = sqrt(aux_x*aux_x + aux_y*aux_y);
