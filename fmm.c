@@ -15,19 +15,14 @@ int main()
 	int i,j;
 	double hx,hy;
 	vect v;
-	//int Nx,Ny;
-	//Nx = 257;	
-	//Ny = 257;
-	//Define stepsizes, heap for Trial U values, count for iteration number
+	
+	////Define stepsizes, heap for Trial U values, count for iteration number
 	hx = (XMAX - XMIN)/(Nx - 1.0);
 	hy = (YMAX - YMIN)/(Ny - 1.0);	
 
 	printf("hx = %f \n",hx);	
-	//Initialize Domain
 	
-	//point *A;	
-	//A = (point*)malloc(Nx*Ny*sizeof(point));	
-	
+	////Initialize Domain
 	point  *A[Ny];
 	for (i = 0; i < Ny; i++)
 	{
@@ -45,8 +40,8 @@ int main()
 
 			//Two point sources, specific speed function
 			get_coord(i,j,hx,hy,&v);		
-			A[i][j].s = 1.0/(2.0 + 5.0*v.x + 20.0*v.y);
-			//A[i][j].s = 1; //speed function identically 1, 1 point source
+			//A[i][j].s = 1.0/(2.0 + 5.0*v.x + 20.0*v.y);
+			A[i][j].s = 1; //speed function identically 1, 1 point source
 			A[i][j].U = INFTY;
 		}
 	}
@@ -75,14 +70,10 @@ int main()
 	/*Two point sources(see Cameron's note)*/
 	num_initial = 2;
 	vect init[num_initial];
-	init[0].x = 0.0;
-	init[0].y = 0.0;
-	init[1].x = 0.8;
-	init[1].y = 0.0;
-
-	printf("init[1] = \n");
-	printf("%f \n",init[1].x);
-	printf("%f \n",init[1].y);
+	init[0].x = 0.5;
+	init[0].y = 0.5;
+	init[1].x = 0.52;
+	init[1].y = 0.52;
 
 	////////////////////////////////
 	/*Initialization of algorithm */
@@ -96,8 +87,10 @@ int main()
 	for(i = 0; i < num_initial; i++)
 	{
 		get_meshindex(&row, &col, hx, hy, init[i]);
-		
-		A[row][col].label = '2';
+	
+
+	//NOTE: not sure if labelling this as known is needed
+	//	A[row][col].label = '2';
 		A[row][col].U = 0.0;
 	}
 
