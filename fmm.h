@@ -67,3 +67,4 @@ void get_neighbors(int neighbors[4][2],int row, int col);
 //Declare quadratic function
 void solve_quadratic(double a, double b, double c, double *roots);
 
+
