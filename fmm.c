@@ -229,6 +229,7 @@ int fmm(int Nx, int Ny)
 	for (i = 0; i < Ny; i++)
 	{
 		aux_y = YMIN + hy*i;
+		//aux_x = XMIN + hx*i;
 		for (j = 0; j < Nx; j++)
 		{
  			//printf("%0.2f\n ",A[i][j].U);
@@ -236,6 +237,7 @@ int fmm(int Nx, int Ny)
 			//fprintf(fid,"%.6e\t",A[i][j].U);
 			fprintf(fid,"%.6e\t",A[i*Nx + j].U);
 			aux_x = XMIN + hx*j;
+			//aux_y = YMIN + hy*j;
 			tmp = sqrt(aux_x*aux_x + aux_y*aux_y);
 			fprintf(hid,"%.6e\t",tmp);
 			//s = 1.0/(2.0 + 5.0*aux_x + 20.0*aux_y);
@@ -247,13 +249,12 @@ int fmm(int Nx, int Ny)
 			err = fabs(A[i*row + j].U - tmp);
 			fprintf(gid,"%.6e\t",err);
 			if( err > max_err ) max_err = err;
-			
 
 		}
  		printf("\n");
 		fprintf(fid,"\n");
 		fprintf(gid,"\n");
-		fprintf(hid,"\n");
+		fprintf(hid," end of row %d \n",i);
 		//printf("max_err = %f \n",max_err);
 	}
 	fclose(fid);
