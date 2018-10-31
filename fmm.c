@@ -225,7 +225,7 @@ int fmm(int Nx, int Ny)
 	gid = fopen("err.txt","w");
 	FILE *hid;
 	hid = fopen("trueU.txt","w");
-	double tmp,aux_x,aux_y,max_err = 0,err = 0,tmp1,tmp2,s;
+	double tmp,aux_x,aux_y,max_err = 0,err,tmp1,tmp2,s;
 	for (i = 0; i < Ny; i++)
 	{
 		aux_y = YMIN + hy*i;
@@ -244,7 +244,7 @@ int fmm(int Nx, int Ny)
 			//tmp = fmin(tmp1,tmp2);
 			//fprintf(gid,"%.6e\t",tmp);
 			//err = A[i][j].U - tmp;
-			err = abs(A[i*row + j].U - tmp);
+			err = fabs(A[i*row + j].U - tmp);
 			fprintf(gid,"%.6e\t",err);
 			if( err > max_err ) max_err = err;
 			
