@@ -10,7 +10,7 @@
 struct point
 {
 	char label;
-	long double U;	
+	double U;	
 
 	int row;
 	int col;
@@ -64,7 +64,6 @@ void get_meshindex(int *row, int *col, double hx, double hy, vect v);
 void get_neighbors(int neighbors[4][2],int row, int col);
 
 //Declare quadratic function
-void solve_quadratic(long double a, long double b, long double c, long double *roots);
-
+void solve_quadratic(double a, double b, double c, double *roots);
 
 int fmm(int Nx, int Ny);
