@@ -228,7 +228,7 @@ int fmm(int Nx, int Ny)
 		for (j = 0; j < Nx; j++)
 		{
  			//printf("%0.2f\n ",A[i][j].U);
-			printf("%0.2f ",A[i*Nx + j].U);
+			//printf("%0.2f ",A[i*Nx + j].U);
 			//fprintf(fid,"%.6e\t",A[i][j].U);
 			fprintf(fid,"%.6e\t",A[i*Nx + j].U);
 			aux_x = XMIN + hx*j;
@@ -242,7 +242,7 @@ int fmm(int Nx, int Ny)
 			err = A[i*row + j].U - tmp;
 			if( err > max_err ) max_err = err;
 		}
- 		printf("\n");
+ 		//printf("\n");
 		fprintf(fid,"\n");
 		fprintf(gid,"\n");
 	}
@@ -266,8 +266,8 @@ int fmm(int Nx, int Ny)
 //End program
 int main()
 {
-	int Nx = 257;
-	int Ny = 257;
+	int Nx = 2049;
+	int Ny = 2049;
 
 	fmm(Nx,Ny);
 
