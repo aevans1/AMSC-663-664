@@ -21,7 +21,8 @@ int fmm(int Nx, int Ny)
 	hy = (YMAX - YMIN)/(Ny - 1.0);	
 
 	printf("hx = %f \n",hx);	
-	
+	printf("hy = %f \n",hy);	
+
 	////Initialize Domain
 	//point  *A[Ny];
 	//for (i = 0; i < Ny; i++)
@@ -221,7 +222,7 @@ int fmm(int Nx, int Ny)
 	fid = fopen("U.txt","w");
 	FILE *gid;
 	gid = fopen("trueU.txt","w");
-	double tmp,aux_x,aux_y,max_err = 0,err,tmp1,tmp2,s;
+	double tmp,aux_x,aux_y,max_err = 0,err = 0,tmp1,tmp2,s;
 	for (i = 0; i < Ny; i++)
 	{
 		aux_y = YMIN + hy*i;
@@ -241,10 +242,13 @@ int fmm(int Nx, int Ny)
 			//err = A[i][j].U - tmp;
 			err = A[i*row + j].U - tmp;
 			if( err > max_err ) max_err = err;
+			
+
 		}
  		//printf("\n");
 		fprintf(fid,"\n");
 		fprintf(gid,"\n");
+		printf("max_err = %f \n",max_err);
 	}
 	fclose(fid);
 	fclose(gid);
