@@ -22,6 +22,17 @@ void myotherfun(int* x)
 int main()
 {
 
+	int h[2];
+	int g[2];
+	g[0] = 1;
+	h[0] = g[0];
+	printf("a[0] = %d \n",h[0]);
+	g[0] = 5;
+	printf("a[0] = %d \n",h[0]);
+
+
+
+
 	float y;
 	int l;
 	y = l/2.0;
