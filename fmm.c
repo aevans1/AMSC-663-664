@@ -230,7 +230,7 @@ int fmm(int Nx, int Ny)
  			//printf("%0.2f\n ",A[i][j].U);
 			printf("%0.2f ",A[i*Nx + j].U);
 			//fprintf(fid,"%.6e\t",A[i][j].U);
-			//fprintf(fid,"%.6e\t",A[i*Nx + j].U);
+			fprintf(fid,"%.6e\t",A[i*Nx + j].U);
 			aux_x = XMIN + hx*j;
 			tmp = sqrt(aux_x*aux_x + aux_y*aux_y);
 			//s = 1.0/(2.0 + 5.0*aux_x + 20.0*aux_y);
@@ -266,8 +266,8 @@ int fmm(int Nx, int Ny)
 //End program
 int main()
 {
-	int Nx = 17;
-	int Ny = 17;
+	int Nx = 257;
+	int Ny = 257;
 
 	fmm(Nx,Ny);
 
