@@ -4,13 +4,15 @@
 #include <stdlib.h>
 #include "fmm.h"
 
+<<<<<<< HEAD
+=======
+//TODO: comments here
 
 ////////////////////////////////////////////
 //Fast Marching Method for solving the eikonal equation ||grad U|| = s(x)
 //To change parameters, see header file fmm.h
 //To compile, type 'make' in command line
 ///////////////////////////////////////////
-
 
 int fmm(int Nx, int Ny)
 {
@@ -67,8 +69,6 @@ int fmm(int Nx, int Ny)
 		}
 	}
 
-
-
 	point *heap;
 	heap = (point*)malloc(Nx*Ny*sizeof(point));
 
@@ -98,12 +98,12 @@ int fmm(int Nx, int Ny)
 	//init[0].y = 0.5;
 	////init[1].x = 0.52;
 	////init[1].y = 0.52;
-
+	
 	////////////////////////////////
 	/*Initialization of algorithm */
 	///////////////////////////////
-	
 	//Label all neighbors of Known points as Trial, update U values of Neighbors and add their U-values to heap
+	
 	int row, col, new_row, new_col;
 	double h;
 	int neighbor[4][2];
@@ -150,7 +150,6 @@ int fmm(int Nx, int Ny)
 			}
 		}
 	}	
-
 	//////////////////
 	/*Main Loop     */
 	//////////////////
@@ -229,7 +228,7 @@ int fmm(int Nx, int Ny)
 	double tmp,aux_x,aux_y,max_err = 0,err,tmp1,tmp2,s;
 	for (i = 0; i < Ny; i++)
 	{
-		aux_y = YMIN + hy*i;
+		aux_y = YMIN + hx*i;
 		for (j = 0; j < Nx; j++)
 		{
  			//printf("%0.2f\n ",A[i][j].U);
@@ -265,6 +264,7 @@ int fmm(int Nx, int Ny)
 	free(A);
 
 	free(heap);
+	
 }
 
 //End program

@@ -6,10 +6,10 @@
 
 //solves a quadratic ax^2 + bx + c for real coefficients a,b,c, returns answer
 //with list of REAL roots, returns NAN if complex
-void solve_quadratic(double a, double b, double c, double* roots)
+void solve_quadratic(long double a, long double b, long double c, long double* roots)
 {
 	//calculate discriminant
-	double d;
+	long double d;
 	d = b*b - 4*a*c;
 
 	if (d < 0)
@@ -25,10 +25,10 @@ void solve_quadratic(double a, double b, double c, double* roots)
 /*Main for testing*/
 //void main()
 //{
-//	double a;
-//	double b;
-//	double c;
-//	double complex roots[2];
+//	long double a;
+//	long double b;
+//	long double c;
+//	long double complex roots[2];
 //
 //	a = 1300.1119;
 //	b = -69.1;
