@@ -4,17 +4,13 @@
 #include <stdlib.h>
 #include "fmm.h"
 
-<<<<<<< HEAD
-=======
-//TODO: comments here
-
 ////////////////////////////////////////////
 //Fast Marching Method for solving the eikonal equation ||grad U|| = s(x)
 //To change parameters, see header file fmm.h
 //To compile, type 'make' in command line
 ///////////////////////////////////////////
 
-int fmm(int Nx, int Ny)
+int main()
 {
 	int i,j;
 	double hx,hy;
@@ -26,46 +22,27 @@ int fmm(int Nx, int Ny)
 
 	printf("hx = %f \n",hx);	
 	
-	////Initialize Domain
-	//point  *A[Ny];
-	//for (i = 0; i < Ny; i++)
-	//{
-	//	A[i] = (point *)malloc(Ny*sizeof(point));
-	//}
-	point *A;
-	A = (point *)malloc(sizeof(point)*Nx*Ny);
+	//Initialize Domain
+	point  *A[Ny];
+	for (i = 0; i < Ny; i++)
+	{
+		A[i] = (point *)malloc(Ny*sizeof(point));
+	}
 
-
-	//double x,y;
-	//for (i = 0; i < Ny; i++)
-	//{
-	//	for (j = 0; j < Nx; j++)
-	//	{
-	//		A[i][j].label = '0'; //label all as 'Far'
-	//		A[i][j].row = i;
-	//		A[i][j].col = j;
-
-	//		//Two point sources, specific speed function
-	//		get_coord(i,j,hx,hy,&v);		
-	//		//A[i][j].s = 1.0/(2.0 + 5.0*v.x + 20.0*v.y);
-	//		A[i][j].s = 1; //speed function identically 1, 1 point source
-	//		A[i][j].U = INFTY;
-	//	}
-	//}
 	double x,y;
 	for (i = 0; i < Ny; i++)
 	{
 		for (j = 0; j < Nx; j++)
 		{
-			A[i*Nx + j].label = '0'; //label all as 'Far'
-			A[i*Nx + j].row = i;
-			A[i*Nx + j].col = j;
+			A[i][j].label = '0'; //label all as 'Far'
+			A[i][j].row = i;
+			A[i][j].col = j;
 
 			//Two point sources, specific speed function
 			get_coord(i,j,hx,hy,&v);		
-			//A[i*Nx + j].s = 1.0/(2.0 + 5.0*v.x + 20.0*v.y);
-			A[i*Nx + j].s = 1; //speed function identically 1, 1 point source
-			A[i*Nx + j].U = INFTY;
+			//A[i][j].s = 1.0/(2.0 + 5.0*v.x + 20.0*v.y);
+			A[i][j].s = 1; //speed function identically 1, 1 point source
+			A[i][j].U = INFTY;
 		}
 	}
 
@@ -112,18 +89,13 @@ int fmm(int Nx, int Ny)
 	{
 		get_meshindex(&row, &col, hx, hy, init[i]);
 	
-
-	//NOTE: not sure if labelling this as known is needed
-	//	A[row][col].label = '2';
-	    A[row*Nx +col].label = '2';
-	//	A[row][col].U = 0.0;
-		A[row*Nx + col].U = 0.0;
+		A[row][col].label = '2';
+		A[row][col].U = 0.0;
 	}
 
 	for(i = 0; i < num_initial; i++)
 	{
 		get_meshindex(&row, &col, hx, hy, init[i]);
-		//int	neighbor[4][2]= {{row+1, col},{row-1,col},{row,col+1},{row,col-1}};	
 		get_neighbors(neighbor,row,col);
 
 		for (j = 0; j < 4; j++)
@@ -136,17 +108,11 @@ int fmm(int Nx, int Ny)
 
 			//Change neighbor of Known point to Trial Point, update value and add to
 			//heap
-			//if (in_mesh(new_row,new_col))
-			if (in_mesh(new_row,new_col, Nx, Ny))
+			if (in_mesh(new_row,new_col))
 			{
-				//A[new_row][new_col].label = '1';	
-				//A[new_row][new_col].U = A[row][col].U + h*A[new_row][new_col].s;		
-				//add_heap(&heap[0],A[new_row][new_col],&count);
-			
-				A[new_row*Nx + new_col].label = '1';	
-				A[new_row*Nx + new_col].U = A[row*Nx + col].U + h*A[new_row*Nx + new_col].s;		     			
-				add_heap(&heap[0],A[new_row*Nx + new_col],&count);
-			
+				A[new_row][new_col].label = '1';	
+				A[new_row][new_col].U = A[row][col].U + h*A[new_row][new_col].s;		
+				add_heap(&heap[0],A[new_row][new_col],&count);
 			}
 		}
 	}	
@@ -168,12 +134,10 @@ int fmm(int Nx, int Ny)
 		col = new_known.col;
 		
 		//printf("new_known: A[%d][%d] = %f \n",row,col,new_known.U);	
-		//A[row][col].label = '2';
-		A[row*Nx + col].label = '2';
+		A[row][col].label = '2';
 
 		//Find all not Known neighbors of 'New Known', label as trial, and
 		//update
-		//int neighbor[4][2] = {{row+1, col},{row-1,col},{row,col+1},{row,col-1}};	
 		get_neighbors(neighbor,row,col);
 		int new_row, new_col;
 		for (i = 0; i < 4; i++)
@@ -182,38 +146,22 @@ int fmm(int Nx, int Ny)
 			new_col = neighbor[i][1];
 
 			//Check if neighbor is in the mesh, then update	
-			if (in_mesh(new_row,new_col,Nx,Ny))
+			if (in_mesh(new_row,new_col))
 			{
-				//temp_update = update(A[new_row][new_col],A,hx,hy);
-				//temp_update = update(A[new_row][new_col],A,hx,hy,Nx,Ny);
-				temp_update = update(A[new_row*Nx + new_col],A,hx,hy,Nx,Ny);
+				temp_update = update(A[new_row][new_col],A,hx,hy);
 
 				////only update if it decreases the U-value
-				//if (temp_update < A[new_row][new_col].U)
-				//{
-				//	A[new_row][new_col].U = temp_update;
-				//}
+				if (temp_update < A[new_row][new_col].U)
+				{
+					A[new_row][new_col].U = temp_update;
+				}
 		
 				////If a Far point, label as Trial and add to heap
-				//if (A[new_row][new_col].label == '0')
-				//{
-				//	A[new_row][new_col].label = '1';
-				//	add_heap(&heap[0],A[new_row][new_col],&count);
-				//}
-
-				//only update if it decreases the U-value
-				if (temp_update < A[new_row*Nx + new_col].U)
+				if (A[new_row][new_col].label == '0')
 				{
-					A[new_row*Nx + new_col].U = temp_update;
+					A[new_row][new_col].label = '1';
+					add_heap(&heap[0],A[new_row][new_col],&count);
 				}
-		
-				//If a Far point, label as Trial and add to heap
-				if (A[new_row*Nx + new_col].label == '0')
-				{
-					A[new_row*Nx + new_col].label = '1';
-					add_heap(&heap[0],A[new_row*Nx + new_col],&count);
-				}
-
 			}
 		}
 	}
@@ -231,8 +179,7 @@ int fmm(int Nx, int Ny)
 		aux_y = YMIN + hx*i;
 		for (j = 0; j < Nx; j++)
 		{
- 			//printf("%0.2f\n ",A[i][j].U);
-			printf("%0.2f ",A[i*Nx + j].U);
+ 			printf("%0.2f ",A[i][j].U);
 			//fprintf(fid,"%.6e\t",A[i][j].U);
 			//fprintf(fid,"%.6e\t",A[i*Nx + j].U);
 			aux_x = XMIN + hx*j;
@@ -242,8 +189,8 @@ int fmm(int Nx, int Ny)
 			//tmp2 = (1.0/sqrt(425.0))*acosh(1.0 + (1.0/6.0)*0.5*s*425.0*((aux_x - 0.8)*(aux_x-0.8) + (aux_y - 0)*(aux_y - 0)));
 			//tmp = fmin(tmp1,tmp2);
 			fprintf(gid,"%.6e\t",tmp);
-			//err = A[i][j].U - tmp;
-			err = A[i*row + j].U - tmp;
+			err = A[i][j].U - tmp;
+			//err = A[i*row + j].U - tmp;
 			if( err > max_err ) max_err = err;
 		}
  		printf("\n");
@@ -254,29 +201,19 @@ int fmm(int Nx, int Ny)
 	fclose(gid);
 	printf("Nx = %i, Ny = %i, MaxErr = %.4e\n",Nx,Ny,max_err);
 	printf("%i\t%i\t%.4e\n",Nx,Ny,max_err);
-
 	
-	///*Free up memory*/
-	//for (i = 0; i < Ny; i++)
-	//{
-	//	free(A[i]);
-	//}
-	free(A);
+	/*Free up memory*/
+	for (i = 0; i < Ny; i++)
+	{
+		free(A[i]);
+	}
 
 	free(heap);
-	
-}
-
-//End program
-int main()
-{
-	int Nx = 1029;
-	int Ny = 1029;
-
-	fmm(Nx,Ny);
 
 	return 0;
 }
+//End program
+
 
 
 

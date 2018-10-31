@@ -10,7 +10,7 @@
 struct point
 {
 	char label;
-	long double U;	
+	double U;	
 
 	int row;
 	int col;
@@ -42,8 +42,8 @@ typedef struct vect vect;
 //#define YMAX 1.0
 
 ////number of steps in x,y directions
-//extern int Nx;
-//extern int Ny;
+#define Nx 17
+#define Ny 17
 
 ////Max possible value for U, default for Far points
 #define INFTY 1e6
@@ -55,16 +55,12 @@ void add_heap(struct point *heap, struct point p, int *count);
 struct point pop_heap(struct point *heap, int *count);
 
 //Declaring all helper functions
-//double update(struct point p, struct point *A[Ny], double hx, double hy);
-double update(struct point p, struct point *A, double hx, double hy, int Nx, int Ny);
-//int in_mesh(int row, int col);
-int in_mesh(int row, int col,int Nx, int Ny);
+double update(struct point p, struct point *A[Ny], double hx, double hy);
+int in_mesh(int row, int col);
 void get_coord(int row, int col, double hx, double hy, vect *v);
 void get_meshindex(int *row, int *col, double hx, double hy, vect v);
 void get_neighbors(int neighbors[4][2],int row, int col);
 
 //Declare quadratic function
-void solve_quadratic(long double a, long double b, long double c, long double *roots);
+void solve_quadratic(double a, double b, double c, double *roots);
 
-
-int fmm(int Nx, int Ny);
