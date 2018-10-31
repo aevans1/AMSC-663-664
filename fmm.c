@@ -180,8 +180,7 @@ int main()
 		for (j = 0; j < Nx; j++)
 		{
  			printf("%0.2f ",A[i][j].U);
-			//fprintf(fid,"%.6e\t",A[i][j].U);
-			//fprintf(fid,"%.6e\t",A[i*Nx + j].U);
+			fprintf(fid,"%.6e\t",A[i][j].U);
 			aux_x = XMIN + hx*j;
 			tmp = sqrt(aux_x*aux_x + aux_y*aux_y);
 			//s = 1.0/(2.0 + 5.0*aux_x + 20.0*aux_y);
