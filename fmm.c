@@ -23,33 +23,23 @@ int main()
 	printf("hx = %f \n",hx);	
 	printf("hy = %f \n",hy);	
 
-<<<<<<< HEAD
 	point *A;
 	A = (point *)malloc(sizeof(point)*Nx*Ny);
-	
-=======
-	//Initialize Domain
-	point  *A[Ny];
-	for (i = 0; i < Ny; i++)
-	{
-		A[i] = (point *)malloc(Ny*sizeof(point));
-	}
 
->>>>>>> experiment
 	double x,y;
 	for (i = 0; i < Ny; i++)
 	{
 		for (j = 0; j < Nx; j++)
 		{
-			A[i][j].label = '0'; //label all as 'Far'
-			A[i][j].row = i;
-			A[i][j].col = j;
+			A[i*Nx + j].label = '0'; //label all as 'Far'
+			A[i*Nx + j].row = i;
+			A[i*Nx + j].col = j;
 
 			//Two point sources, specific speed function
 			get_coord(i,j,hx,hy,&v);		
-			//A[i][j].s = 1.0/(2.0 + 5.0*v.x + 20.0*v.y);
-			A[i][j].s = 1; //speed function identically 1, 1 point source
-			A[i][j].U = INFTY;
+			//A[i*Nx + j].s = 1.0/(2.0 + 5.0*v.x + 20.0*v.y);
+			A[i*Nx + j].s = 1; //speed function identically 1, 1 point source
+			A[i*Nx + j].U = INFTY;
 		}
 	}
 
@@ -95,16 +85,9 @@ int main()
 	for(i = 0; i < num_initial; i++)
 	{
 		get_meshindex(&row, &col, hx, hy, init[i]);
-	
-<<<<<<< HEAD
 
-	//NOTE: not sure if labelling this as known is needed
 	    A[row*Nx +col].label = '2';
 		A[row*Nx + col].U = 0.0;
-=======
-		A[row][col].label = '2';
-		A[row][col].U = 0.0;
->>>>>>> experiment
 	}
 
 	for(i = 0; i < num_initial; i++)
@@ -124,16 +107,9 @@ int main()
 			//heap
 			if (in_mesh(new_row,new_col))
 			{
-<<<<<<< HEAD
 				A[new_row*Nx + new_col].label = '1';	
 				A[new_row*Nx + new_col].U = A[row*Nx + col].U + h*A[new_row*Nx + new_col].s;		     			
 				add_heap(&heap[0],A[new_row*Nx + new_col],&count);
-			
-=======
-				A[new_row][new_col].label = '1';	
-				A[new_row][new_col].U = A[row][col].U + h*A[new_row][new_col].s;		
-				add_heap(&heap[0],A[new_row][new_col],&count);
->>>>>>> experiment
 			}
 		}
 	}	
@@ -153,13 +129,7 @@ int main()
 		new_known = pop_heap(&heap[0],&count);
 		row = new_known.row;
 		col = new_known.col;
-		
-<<<<<<< HEAD
 		A[row*Nx + col].label = '2';
-=======
-		//printf("new_known: A[%d][%d] = %f \n",row,col,new_known.U);	
-		A[row][col].label = '2';
->>>>>>> experiment
 
 		//Find all not Known neighbors of 'New Known', label as trial, and
 		//update
@@ -173,26 +143,19 @@ int main()
 			//Check if neighbor is in the mesh, then update	
 			if (in_mesh(new_row,new_col))
 			{
-<<<<<<< HEAD
 				temp_update = update(A[new_row*Nx + new_col],A,hx,hy,Nx,Ny);
 			
 				//only update if it decreases the U-value
 				if (temp_update < A[new_row*Nx + new_col].U)
-=======
-				temp_update = update(A[new_row][new_col],A,hx,hy);
-
-				////only update if it decreases the U-value
-				if (temp_update < A[new_row][new_col].U)
->>>>>>> experiment
 				{
-					A[new_row][new_col].U = temp_update;
+					A[new_row*Nx + new_col].U = temp_update;
 				}
 		
 				////If a Far point, label as Trial and add to heap
-				if (A[new_row][new_col].label == '0')
+				if (A[new_row*Nx + new_col].label == '0')
 				{
-					A[new_row][new_col].label = '1';
-					add_heap(&heap[0],A[new_row][new_col],&count);
+					A[new_row*Nx + new_col].label = '1';
+					add_heap(&heap[0],A[new_row*Nx + new_col],&count);
 				}
 			}
 		}
@@ -204,68 +167,40 @@ int main()
 	FILE *fid;
 	fid = fopen("U.txt","w");
 	FILE *gid;
-<<<<<<< HEAD
 	gid = fopen("err.txt","w");
-=======
-	//gid = fopen("trueU.txt","w");
-	gid = fopen("err.txt","w");
-	FILE*hid;
-	hid = fopen("trueU.txt","w");
->>>>>>> experiment
 	double tmp,aux_x,aux_y,max_err = 0,err,tmp1,tmp2,s;
 	for (i = 0; i < Ny; i++)
 	{
 		aux_y = YMIN + hy*i;
 		for (j = 0; j < Nx; j++)
 		{
-<<<<<<< HEAD
 			//printf("%0.2f ",A[i*Nx + j].U);
 			fprintf(fid,"%.6e\t",A[i*Nx + j].U);
 			aux_x = XMIN + hx*j;
 			tmp = sqrt(aux_x*aux_x + aux_y*aux_y);
 			
 			/*For 2 point sources */
-=======
- 			//printf("%0.2f ",A[i][j].U);
-			fprintf(fid,"%.6e\t",A[i][j].U);
-			aux_x = XMIN + hx*j;
-			tmp = sqrt(aux_x*aux_x + aux_y*aux_y);
-			fprintf(hid,"%.6e\t",tmp);
->>>>>>> experiment
 			//s = 1.0/(2.0 + 5.0*aux_x + 20.0*aux_y);
 			//tmp1 = (1.0/sqrt(425.0))*acosh(1.0 + 0.5*0.5*s*425.0*((aux_x - 0)*(aux_x-0) + (aux_y - 0)*(aux_y - 0)));
 			//tmp2 = (1.0/sqrt(425.0))*acosh(1.0 + (1.0/6.0)*0.5*s*425.0*((aux_x - 0.8)*(aux_x-0.8) + (aux_y - 0)*(aux_y - 0)));
 			//tmp = fmin(tmp1,tmp2);
-<<<<<<< HEAD
 			
 			err = fabs(A[i*Nx + j].U - tmp);
 			fprintf(gid,"%.6e\t",err);
 			if( err > max_err ) max_err = err;
-
-=======
-			err = fabs(A[i][j].U - tmp);
-			//err = A[i*row + j].U - tmp;
 			fprintf(gid,"%.6e\t",err);
-			printf("%0.2f ",err);
-			if( err > max_err )
-			{
-				max_err = err;
-		    }
-			//printf("%0.6e\t \n",max_err);
->>>>>>> experiment
+			//printf("%0.2f ",err);
+			if( err > max_err ) max_err = err;
 		}
  		//printf("\n");
 		fprintf(fid,"\n");
 		fprintf(gid,"\n");
-		fprintf(hid,"\n");
 	}
 	fclose(fid);
 	fclose(gid);
-	fclose(hid);
 	printf("Nx = %i, Ny = %i, MaxErr = %.4e\n",Nx,Ny,max_err);
 	printf("%i\t%i\t%.4e\n",Nx,Ny,max_err);
 	
-<<<<<<< HEAD
 	///*Free up memory*/
 	free(A);
 	free(heap);
@@ -280,6 +215,15 @@ int main()
 	int Ny = 2049;
 
 	fmm(Nx,Ny);
+=======
+	/*Free up memory*/
+	for (i = 0; i < Ny; i++)
+	{
+		free(A[i]);
+	}
+
+	free(heap);
+>>>>>>> experiment
 =======
 	/*Free up memory*/
 	for (i = 0; i < Ny; i++)

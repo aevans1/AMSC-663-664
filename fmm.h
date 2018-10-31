@@ -35,23 +35,11 @@ typedef struct vect vect;
 #define YMIN -0.7
 #define YMAX 0.7
 
-//#define YMIN -3.5
-//#define YMAX 3.5
-//#define XMIN -0.7
-//#define XMAX 0.7
-
-
-
-
 //Two point sources:
 //#define XMIN 0.0
 //#define XMAX 1.0
 //#define YMIN 0.0
 //#define YMAX 1.0
-
-////number of steps in x,y directions
-#define Nx 5
-#define Ny 5
 
 ////Max possible value for U, default for Far points
 #define INFTY 1e6
@@ -63,8 +51,8 @@ void add_heap(struct point *heap, struct point p, int *count);
 struct point pop_heap(struct point *heap, int *count);
 
 //Declaring all helper functions
-double update(struct point p, struct point *A[Ny], double hx, double hy);
-int in_mesh(int row, int col);
+double update(struct point p, struct point *A, double hx, double hy, int Nx, int Ny);
+int in_mesh(int row, int col, int Nx, int Ny);
 void get_coord(int row, int col, double hx, double hy, vect *v);
 void get_meshindex(int *row, int *col, double hx, double hy, vect v);
 void get_neighbors(int neighbors[4][2],int row, int col);
@@ -72,7 +60,4 @@ void get_neighbors(int neighbors[4][2],int row, int col);
 //Declare quadratic function
 void solve_quadratic(double a, double b, double c, double *roots);
 
-<<<<<<< HEAD
 int fmm(int Nx, int Ny);
-=======
->>>>>>> experiment
