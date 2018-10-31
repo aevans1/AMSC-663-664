@@ -175,35 +175,41 @@ int main()
 	FILE *gid;
 	//gid = fopen("trueU.txt","w");
 	gid = fopen("err.txt","w");
+	FILE*hid;
+	hid = fopen("trueU.txt","w");
 	double tmp,aux_x,aux_y,max_err = 0,err,tmp1,tmp2,s;
 	for (i = 0; i < Ny; i++)
 	{
 		aux_y = YMIN + hy*i;
 		for (j = 0; j < Nx; j++)
 		{
- 			printf("%0.2f ",A[i][j].U);
+ 			//printf("%0.2f ",A[i][j].U);
 			fprintf(fid,"%.6e\t",A[i][j].U);
 			aux_x = XMIN + hx*j;
 			tmp = sqrt(aux_x*aux_x + aux_y*aux_y);
+			fprintf(hid,"%.6e\t",tmp);
 			//s = 1.0/(2.0 + 5.0*aux_x + 20.0*aux_y);
 			//tmp1 = (1.0/sqrt(425.0))*acosh(1.0 + 0.5*0.5*s*425.0*((aux_x - 0)*(aux_x-0) + (aux_y - 0)*(aux_y - 0)));
 			//tmp2 = (1.0/sqrt(425.0))*acosh(1.0 + (1.0/6.0)*0.5*s*425.0*((aux_x - 0.8)*(aux_x-0.8) + (aux_y - 0)*(aux_y - 0)));
 			//tmp = fmin(tmp1,tmp2);
-			fprintf(gid,"%.6e\t",tmp);
 			err = A[i][j].U - tmp;
 			//err = A[i*row + j].U - tmp;
 			fprintf(gid,"%.6e\t",err);
+			printf("%0.2f ",err);
 			if( err > max_err )
 			{
 				max_err = err;
-		    }	
+		    }
+			//printf("%0.6e\t \n",max_err);
 		}
  		printf("\n");
 		fprintf(fid,"\n");
 		fprintf(gid,"\n");
+		fprintf(hid,"\n");
 	}
 	fclose(fid);
 	fclose(gid);
+	fclose(hid);
 	printf("Nx = %i, Ny = %i, MaxErr = %.4e\n",Nx,Ny,max_err);
 	printf("%i\t%i\t%.4e\n",Nx,Ny,max_err);
 	
