@@ -224,7 +224,7 @@ int fmm(int Nx, int Ny)
 	double tmp,aux_x,aux_y,max_err = 0,err,tmp1,tmp2,s;
 	for (i = 0; i < Ny; i++)
 	{
-		aux_y = YMIN + hx*i;
+		aux_y = YMIN + hy*i;
 		for (j = 0; j < Nx; j++)
 		{
  			//printf("%0.2f\n ",A[i][j].U);
