@@ -4,10 +4,6 @@
 #include <stdlib.h>
 #include "fmm.h"
 
-<<<<<<< HEAD
-=======
-//TODO: comments here
-
 ////////////////////////////////////////////
 //Fast Marching Method for solving the eikonal equation ||grad U|| = s(x)
 //To change parameters, see header file fmm.h
@@ -270,8 +266,8 @@ int fmm(int Nx, int Ny)
 //End program
 int main()
 {
-	int Nx = 1029;
-	int Ny = 1029;
+	int Nx = 17;
+	int Ny = 17;
 
 	fmm(Nx,Ny);
 
