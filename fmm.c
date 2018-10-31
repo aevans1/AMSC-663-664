@@ -173,7 +173,8 @@ int main()
 	FILE *fid;
 	fid = fopen("U.txt","w");
 	FILE *gid;
-	gid = fopen("trueU.txt","w");
+	//gid = fopen("trueU.txt","w");
+	gid = fopen("err.txt","w");
 	double tmp,aux_x,aux_y,max_err = 0,err,tmp1,tmp2,s;
 	for (i = 0; i < Ny; i++)
 	{
@@ -191,7 +192,11 @@ int main()
 			fprintf(gid,"%.6e\t",tmp);
 			err = A[i][j].U - tmp;
 			//err = A[i*row + j].U - tmp;
-			if( err > max_err ) max_err = err;
+			fprintf(gid,"%.6e\t",err);
+			if( err > max_err )
+			{
+				max_err = err;
+		    }	
 		}
  		//printf("\n");
 		fprintf(fid,"\n");
