@@ -21,7 +21,8 @@ int main()
 	hy = (YMAX - YMIN)/(Ny - 1.0);	
 
 	printf("hx = %f \n",hx);	
-	
+	printf("hy = %f \n",hy);	
+
 	//Initialize Domain
 	point  *A[Ny];
 	for (i = 0; i < Ny; i++)
