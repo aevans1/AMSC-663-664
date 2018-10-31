@@ -176,10 +176,10 @@ int main()
 	double tmp,aux_x,aux_y,max_err = 0,err,tmp1,tmp2,s;
 	for (i = 0; i < Ny; i++)
 	{
-		aux_y = YMIN + hx*i;
+		aux_y = YMIN + hy*i;
 		for (j = 0; j < Nx; j++)
 		{
- 			printf("%0.2f ",A[i][j].U);
+ 			//printf("%0.2f ",A[i][j].U);
 			fprintf(fid,"%.6e\t",A[i][j].U);
 			aux_x = XMIN + hx*j;
 			tmp = sqrt(aux_x*aux_x + aux_y*aux_y);
@@ -192,7 +192,7 @@ int main()
 			//err = A[i*row + j].U - tmp;
 			if( err > max_err ) max_err = err;
 		}
- 		printf("\n");
+ 		//printf("\n");
 		fprintf(fid,"\n");
 		fprintf(gid,"\n");
 	}
