@@ -1,5 +1,9 @@
-x = linspace(0,1,1029);
-y = linspace(0,1,1029);
+x = linspace(0,1,257);
+y = linspace(0,1,257);
 [X,Y]=meshgrid(x,y);
 U = load('U.txt');
-contourf(X,Y,U,20);
+V = U;
+%%
+%load in different U from other git branch
+U = load('U.txt');
+%contourf(X,Y,U,20);
