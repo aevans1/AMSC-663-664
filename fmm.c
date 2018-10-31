@@ -221,7 +221,8 @@ int fmm(int Nx, int Ny)
 	FILE *fid;
 	fid = fopen("U.txt","w");
 	FILE *gid;
-	gid = fopen("trueU.txt","w");
+	//gid = fopen("trueU.txt","w");
+	gid = fopen("err.txt","w");
 	double tmp,aux_x,aux_y,max_err = 0,err = 0,tmp1,tmp2,s;
 	for (i = 0; i < Ny; i++)
 	{
@@ -238,9 +239,10 @@ int fmm(int Nx, int Ny)
 			//tmp1 = (1.0/sqrt(425.0))*acosh(1.0 + 0.5*0.5*s*425.0*((aux_x - 0)*(aux_x-0) + (aux_y - 0)*(aux_y - 0)));
 			//tmp2 = (1.0/sqrt(425.0))*acosh(1.0 + (1.0/6.0)*0.5*s*425.0*((aux_x - 0.8)*(aux_x-0.8) + (aux_y - 0)*(aux_y - 0)));
 			//tmp = fmin(tmp1,tmp2);
-			fprintf(gid,"%.6e\t",tmp);
+			//fprintf(gid,"%.6e\t",tmp);
 			//err = A[i][j].U - tmp;
 			err = A[i*row + j].U - tmp;
+			fprintf(gid,"%.6e\t",err);
 			if( err > max_err ) max_err = err;
 			
 
@@ -248,7 +250,7 @@ int fmm(int Nx, int Ny)
  		//printf("\n");
 		fprintf(fid,"\n");
 		fprintf(gid,"\n");
-		printf("max_err = %f \n",max_err);
+		//printf("max_err = %f \n",max_err);
 	}
 	fclose(fid);
 	fclose(gid);

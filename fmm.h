@@ -35,6 +35,14 @@ typedef struct vect vect;
 #define YMIN -0.7
 #define YMAX 0.7
 
+//#define YMIN -3.5
+//#define YMAX 3.5
+//#define XMIN -0.7
+//#define XMAX 0.7
+
+
+
+
 //Two point sources:
 //#define XMIN 0.0
 //#define XMAX 1.0
