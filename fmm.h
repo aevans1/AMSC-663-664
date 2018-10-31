@@ -31,20 +31,20 @@ typedef struct vect vect;
 ////Physical width and length of domain
 
 //One point source:
-//#define XMIN -3.5
-//#define XMAX 3.5
-//#define YMIN -0.7
-//#define YMAX 0.7
+#define XMIN -3.5
+#define XMAX 3.5
+#define YMIN -0.7
+#define YMAX 0.7
 
 //Two point sources:
-#define XMIN 0.0
-#define XMAX 1.0
-#define YMIN 0.0
-#define YMAX 1.0
+//#define XMIN 0.0
+//#define XMAX 1.0
+//#define YMIN 0.0
+//#define YMAX 1.0
 
 ////number of steps in x,y directions
-#define Nx 1029
-#define Ny 1029
+//extern int Nx;
+//extern int Ny;
 
 ////Max possible value for U, default for Far points
 #define INFTY 1e6
@@ -56,9 +56,10 @@ void add_heap(struct point *heap, struct point p, int *count);
 struct point pop_heap(struct point *heap, int *count);
 
 //Declaring all helper functions
-double update(struct point p, struct point *A[Ny], double hx, double hy);
-//double update(struct point p, struct point *A, double hx, double hy, int Nx, int Ny);
-int in_mesh(int row, int col);
+//double update(struct point p, struct point *A[Ny], double hx, double hy);
+double update(struct point p, struct point *A, double hx, double hy, int Nx, int Ny);
+//int in_mesh(int row, int col);
+int in_mesh(int row, int col,int Nx, int Ny);
 void get_coord(int row, int col, double hx, double hy, vect *v);
 void get_meshindex(int *row, int *col, double hx, double hy, vect v);
 void get_neighbors(int neighbors[4][2],int row, int col);
@@ -68,3 +69,4 @@ void get_neighbors(int neighbors[4][2],int row, int col);
 void solve_quadratic(double a, double b, double c, double *roots);
 
 
+int fmm(int Nx, int Ny);
