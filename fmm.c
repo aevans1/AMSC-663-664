@@ -277,8 +277,8 @@ int fmm(int Nx, int Ny)
 //End program
 int main()
 {
-	int Nx = 9;
-	int Ny = 9;
+	int Nx = 5;
+	int Ny = 5;
 
 	fmm(Nx,Ny);
 
