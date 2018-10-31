@@ -192,7 +192,7 @@ int main()
 			//tmp1 = (1.0/sqrt(425.0))*acosh(1.0 + 0.5*0.5*s*425.0*((aux_x - 0)*(aux_x-0) + (aux_y - 0)*(aux_y - 0)));
 			//tmp2 = (1.0/sqrt(425.0))*acosh(1.0 + (1.0/6.0)*0.5*s*425.0*((aux_x - 0.8)*(aux_x-0.8) + (aux_y - 0)*(aux_y - 0)));
 			//tmp = fmin(tmp1,tmp2);
-			err = A[i][j].U - tmp;
+			err = fabs(A[i][j].U - tmp);
 			//err = A[i*row + j].U - tmp;
 			fprintf(gid,"%.6e\t",err);
 			printf("%0.2f ",err);
