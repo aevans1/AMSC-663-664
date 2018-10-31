@@ -247,7 +247,7 @@ int fmm(int Nx, int Ny)
 			
 
 		}
- 		//printf("\n");
+ 		printf("\n");
 		fprintf(fid,"\n");
 		fprintf(gid,"\n");
 		//printf("max_err = %f \n",max_err);
