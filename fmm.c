@@ -230,7 +230,7 @@ int fmm(int Nx, int Ny)
 		for (j = 0; j < Nx; j++)
 		{
  			//printf("%0.2f\n ",A[i][j].U);
-			//printf("%0.2f ",A[i*Nx + j].U);
+			printf("%0.2f ",A[i*Nx + j].U);
 			//fprintf(fid,"%.6e\t",A[i][j].U);
 			fprintf(fid,"%.6e\t",A[i*Nx + j].U);
 			aux_x = XMIN + hx*j;
@@ -272,8 +272,8 @@ int fmm(int Nx, int Ny)
 //End program
 int main()
 {
-	int Nx = 2049;
-	int Ny = 2049;
+	int Nx = 9;
+	int Ny = 9;
 
 	fmm(Nx,Ny);
 
