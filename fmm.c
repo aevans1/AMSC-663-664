@@ -246,7 +246,7 @@ int fmm(int Nx, int Ny)
 			//tmp = fmin(tmp1,tmp2);
 			//fprintf(gid,"%.6e\t",tmp);
 			//err = A[i][j].U - tmp;
-			err = fabs(A[i*row + j].U - tmp);
+			err = fabs(A[i*Nx + j].U - tmp);
 			fprintf(gid,"%.6e\t",err);
 			if( err > max_err ) max_err = err;
 
