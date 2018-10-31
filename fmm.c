@@ -181,7 +181,7 @@ int main()
 		aux_y = YMIN + hy*i;
 		for (j = 0; j < Nx; j++)
 		{
- 			//printf("%0.2f ",A[i][j].U);
+ 			printf("%0.2f ",A[i][j].U);
 			fprintf(fid,"%.6e\t",A[i][j].U);
 			aux_x = XMIN + hx*j;
 			tmp = sqrt(aux_x*aux_x + aux_y*aux_y);
@@ -198,7 +198,7 @@ int main()
 				max_err = err;
 		    }	
 		}
- 		//printf("\n");
+ 		printf("\n");
 		fprintf(fid,"\n");
 		fprintf(gid,"\n");
 	}
