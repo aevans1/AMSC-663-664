@@ -85,7 +85,6 @@ int main()
 	for(i = 0; i < num_initial; i++)
 	{
 		get_meshindex(&row, &col, hx, hy, init[i]);
-
 	    A[row*Nx +col].label = '2';
 		A[row*Nx + col].U = 0.0;
 	}
@@ -129,6 +128,7 @@ int main()
 		new_known = pop_heap(&heap[0],&count);
 		row = new_known.row;
 		col = new_known.col;
+		
 		A[row*Nx + col].label = '2';
 
 		//Find all not Known neighbors of 'New Known', label as trial, and
@@ -188,6 +188,7 @@ int main()
 			err = fabs(A[i*Nx + j].U - tmp);
 			fprintf(gid,"%.6e\t",err);
 			if( err > max_err ) max_err = err;
+			
 			fprintf(gid,"%.6e\t",err);
 			//printf("%0.2f ",err);
 			if( err > max_err ) max_err = err;
@@ -224,6 +225,7 @@ int main()
 
 	free(heap);
 >>>>>>> experiment
+<<<<<<< HEAD
 =======
 	/*Free up memory*/
 	for (i = 0; i < Ny; i++)
@@ -233,6 +235,8 @@ int main()
 
 	free(heap);
 >>>>>>> experiment
+=======
+>>>>>>> 1266e96053b4dc6e2aad312f7293cd527f072819
 
 	return 0;
 }
