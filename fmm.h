@@ -42,8 +42,8 @@ typedef struct vect vect;
 //#define YMAX 1.0
 
 ////number of steps in x,y directions
-#define Nx 9
-#define Ny 9
+#define Nx 5
+#define Ny 5
 
 ////Max possible value for U, default for Far points
 #define INFTY 1e6
