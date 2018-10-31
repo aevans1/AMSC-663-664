@@ -27,8 +27,8 @@ void get_neighbors(int neighbors[4][2],int row, int col)
 	neighbors[3][1] = col - 1;
 }
 
-int in_mesh(int row, int col)
-//int in_mesh(int row, int col, int Nx, int Ny)
+//int in_mesh(int row, int col)
+int in_mesh(int row, int col, int Nx, int Ny)
 {
 	int in_mesh = 0;	
 	if (row >= 0 && row < Ny && col >=  0 && col < Nx)
@@ -57,8 +57,8 @@ void get_meshindex(int *row, int *col, double hx, double hy, vect v)
 //input point p to update,
 //array of points A, stepsizes hx,hy
 //Note: Ny is a global variable in points.h
-//double update(point p, point *A, double hx, double hy, int Nx, int Ny)
-double update(point p, point *A[Ny], double hx, double hy)
+double update(point p, point *A, double hx, double hy, int Nx, int Ny)
+//double update(point p, point *A[Ny], double hx, double hy)
 {
 	int i;
 	int j;
@@ -84,8 +84,8 @@ double update(point p, point *A[Ny], double hx, double hy)
 	// calculation
 	if (row > 0 )
 	{	
-		U_north = A[row-1][col].U;
-		//U_north = (*(A + (row - 1)*Nx + col)).U;
+		//U_north = A[row-1][col].U;
+		U_north = (A + (row-1)*Nx + col)->U;
 		//printf("Assigned north as A[%d][%d].U=%f \n",row-1,col,A[row-1][col].U);
 	}
 	else
@@ -94,9 +94,8 @@ double update(point p, point *A[Ny], double hx, double hy)
 	}
 	if (row < Ny -1)
 	{
-		U_south= A[row+1][col].U;
-		//U_south = (*(A + (row+1)*Nx + col)).U;
-		//U_south = A[(col)*Ny + row + 1].U;
+		//U_south= A[row+1][col].U;
+		U_south = (A + (row+1)*Nx + col)->U;
 		//printf("Assigned south as A[%d][%d].U=%f \n",row+1,col,A[row+1][col].U);
 	}
 	else
@@ -106,8 +105,8 @@ double update(point p, point *A[Ny], double hx, double hy)
 
 	if (col > 0)
 	{
-		U_west =A[row][col-1].U;
-		//U_west = (*(A + row*Nx + (col-1))).U;
+		//U_west =A[row][col-1].U;
+		U_west = (A + row*Nx + (col-1))->U;
 		//U_west = A[(col-1)*Ny + row].U;
 		//printf("Assigned west as A[%d][%d].U=%f \n",row,col-1,A[row][col-1].U);
 
@@ -119,8 +118,8 @@ double update(point p, point *A[Ny], double hx, double hy)
 
 	if (col < Nx -1)
 	{
-		U_east = A[row][col+1].U;
-		//U_east = (*(A + row*Nx + (col + 1))).U;
+		//U_east = A[row][col+1].U;
+		U_east = (A + row*Nx + (col + 1))->U;
 		//U_east = A[(col+1)*Ny + row].U;
 		//printf("Assigned east as A[%d][%d].U=%f \n",row,col+1,A[row][col+1].U);
 	}
