@@ -10,7 +10,7 @@
 //To compile, type 'make' in command line
 ///////////////////////////////////////////
 
-int main()
+int fmm(int Nx, int Ny)
 {
 	int i,j;
 	double hx,hy;
@@ -19,9 +19,6 @@ int main()
 	////Define stepsizes, heap for Trial U values, count for iteration number
 	hx = (XMAX - XMIN)/(Nx - 1.0);
 	hy = (YMAX - YMIN)/(Ny - 1.0);	
-
-	printf("hx = %f \n",hx);	
-	printf("hy = %f \n",hy);	
 
 	point *A;
 	A = (point *)malloc(sizeof(point)*Nx*Ny);
@@ -68,10 +65,10 @@ int main()
 	/*Two point sources(see Cameron's note)*/
 	//num_initial = 2;
 	//vect init[num_initial];
-	//init[0].x = 0.5;
-	//init[0].y = 0.5;
-	////init[1].x = 0.52;
-	////init[1].y = 0.52;
+	//init[0].x = 0.0;
+	//init[0].y = 0.0;
+	//init[1].x = 0.8;
+	//init[1].y = 0.0;
 	
 	////////////////////////////////
 	/*Initialization of algorithm */
@@ -104,7 +101,7 @@ int main()
 
 			//Change neighbor of Known point to Trial Point, update value and add to
 			//heap
-			if (in_mesh(new_row,new_col))
+			if (in_mesh(new_row,new_col,Nx,Ny))
 			{
 				A[new_row*Nx + new_col].label = '1';	
 				A[new_row*Nx + new_col].U = A[row*Nx + col].U + h*A[new_row*Nx + new_col].s;		     			
@@ -141,7 +138,7 @@ int main()
 			new_col = neighbor[i][1];
 
 			//Check if neighbor is in the mesh, then update	
-			if (in_mesh(new_row,new_col))
+			if (in_mesh(new_row,new_col,Nx,Ny))
 			{
 				temp_update = update(A[new_row*Nx + new_col],A,hx,hy,Nx,Ny);
 			
@@ -177,6 +174,8 @@ int main()
 			//printf("%0.2f ",A[i*Nx + j].U);
 			fprintf(fid,"%.6e\t",A[i*Nx + j].U);
 			aux_x = XMIN + hx*j;
+			
+			/*One point source, identital speed*/	
 			tmp = sqrt(aux_x*aux_x + aux_y*aux_y);
 			
 			/*For 2 point sources */
@@ -187,10 +186,6 @@ int main()
 			
 			err = fabs(A[i*Nx + j].U - tmp);
 			fprintf(gid,"%.6e\t",err);
-			if( err > max_err ) max_err = err;
-			
-			fprintf(gid,"%.6e\t",err);
-			//printf("%0.2f ",err);
 			if( err > max_err ) max_err = err;
 		}
  		//printf("\n");
@@ -212,31 +207,18 @@ int main()
 
 int main()
 {
-	int Nx = 2049;
-	int Ny = 2049;
-
+	
+	int i,Nx,Ny;
+	//for (i = 0; i < 13; i++)
+	//{
+	//	Nx = pow(2,i) + 1;
+	//	Ny = pow(2,i) + 1;
+	//	fmm(Nx,Ny);
+	//}
+	
+	Nx = 2049;
+	Ny = 2049;
 	fmm(Nx,Ny);
-=======
-	/*Free up memory*/
-	for (i = 0; i < Ny; i++)
-	{
-		free(A[i]);
-	}
-
-	free(heap);
->>>>>>> experiment
-<<<<<<< HEAD
-=======
-	/*Free up memory*/
-	for (i = 0; i < Ny; i++)
-	{
-		free(A[i]);
-	}
-
-	free(heap);
->>>>>>> experiment
-=======
->>>>>>> 1266e96053b4dc6e2aad312f7293cd527f072819
 
 	return 0;
 }

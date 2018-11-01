@@ -30,10 +30,17 @@ typedef struct vect vect;
 ////Physical width and length of domain
 
 //One point source:
-#define XMIN -3.5
-#define XMAX 3.5
-#define YMIN -0.7
-#define YMAX 0.7
+//#define XMIN -3.5
+//#define XMAX 3.5
+//#define YMIN -0.7
+//#define YMAX 0.7
+
+//Two point sources:
+#define XMIN -1.0
+#define XMAX 1.0
+#define YMIN -1.0
+#define YMAX 1.0
+
 
 ////Max possible value for U, default for Far points
 #define INFTY 1e6
