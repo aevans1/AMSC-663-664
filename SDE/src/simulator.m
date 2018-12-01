@@ -52,7 +52,6 @@ function [path_end] = simulator(Xzero,m,T,plot_sim,plot_points)
 		end
 	end
 
-	path_end
 	if plot_points
 		plot_path_end(path_end);
 	end
