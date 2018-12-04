@@ -6,17 +6,10 @@ function [embed_L,embed_Z] = LMDS(L,Z,rho,d)
 	m = size(L,2); %number of landmark vectors
 	p = size(Z,2); %number of data vectors
 	
-	%%%%Step 0:compute distance matrix for L%
-	square_dist = zeros(m,m);
-	for i = 1:m
-		for j = 1:m
-			square_dist(i,j) = ( rho(L(:,i),L(:,j)) )^2;	
-		end
-	end
-	
+
 	%%%Step 1: MDS for landmarks L
 	%TODO: comment about output of this
-	[embed_L,V,eigvals] = MDS(square_dist,rho,d);
+	[embed_L,V,eigvals] = MDS(L,rho,d);
 
 	%Pseudo-inverse transpose of embed_L(verify? Taking from LMDS paper)
 	pinv_L = (diag(eigvals))^(-1/2)*V.';
@@ -37,21 +30,28 @@ function [embed_L,embed_Z] = LMDS(L,Z,rho,d)
 
 end
 
-function [scaling,V,eigvals] = MDS(square_dist,d)
-%perform Mult-Dimensional Scaling on data_set x_1,...x_m, with distance function rho, given a matrix of squared
-%distances of the data points
-%inputs: square-dist - m x m matrix of squared-distances of vectors x_1,..x_m
-%					   i,jth entry of square dist is rho(x_i,x_j)^2
-%		           d - desired dimension for embedding data set
+function [scaling,V,eigvals] = MDS(X,rho,d)
+%perform Mult-Dimensional Scaling on data_set X with distance function rho
+%inputs: X - D x m matrix, columns are data vectors in R^D
+%	     rho - metric for data set X
+%	     d - desired dimension for embedding data set
 %outputs: scaling - Matrix of embedded data points in R^d, columns are embedded
 %					data vectors
 %		        V - Matrix of first d eigenvectors of centered square-dist
 %		            matrix, columns are eigenvectors
 %		  eigvals - First d eigenvalues of centered square-dist matrix
+%NOTE: if rho is euclidean distance, this algorithm is exactly PCA on X	
 	
-	D = size(square_dist,1); %each column is length of data vector in R^D
-	m = size(square_dist,2); %number of data vectors
+	D = size(X,1); %each column is length of data vector in R^D
+	m = size(X,2); %number of data vectors
 
+	%%%%Compute distance matrix for X%
+	square_dist = zeros(m,m);
+	for i = 1:m
+		for j = 1:m
+			square_dist(i,j) = ( rho(X(:,i),X(:,j)) )^2;	
+		end
+	end
 
 	%%%%Center square_dist matrix
 	H = (eye(m) - (1/m)*ones(m,1)*ones(m,1).'); %mean-centering matrix 
