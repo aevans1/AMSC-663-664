@@ -22,9 +22,9 @@ function [scaling,V,eigvals] = MDS(square_dist,d)
 	%V is matrix of eigvecs of B
   	[V,eigvals] = eig(B);
   	[eigvals,ind] = sort(diag(eigvals),'descend');
-	
+	reduced_ind = ind(1:d);
 	%only keep top d eigvals,corresponding eigvecs
 	eigvals = eigvals(1:d);
-  	V = V(:,ind(1:d));
+  	V = V(:,reduced_ind);
 	scaling =  diag(eigvals)^(1/2)*V.';
 end

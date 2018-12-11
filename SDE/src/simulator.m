@@ -12,6 +12,8 @@
 	%plot_sim: boolean parameter, simulation is plotted
 	%plot_path_end: boolean parameter,endpoints of simulations are plotted
 	
+	
+	
 %TODO: comments for simulator 
 function [path_end] = simulator(Xzero,m,T,plot_sim,plot_points)
 
@@ -63,7 +65,8 @@ end
 %%%f function for deterministic part, f(x)dt, of SDE above
 function out = f(x)
 	%In this case, f(x) = grad U, where U(x) = 16x^2(x-1)^2
-	out=  -32*x*(x-1)*(2*x-1);	
+	%out=  32*x*(x-1)*(2*x-1);	
+	out = -32*x*(x-1)*(2*x-1);
 end
 
 %%%plot trajectories of SDE

@@ -1,5 +1,0 @@
-x = linspace(0,1,Nx);
-y = linspace(0,1,Ny);
-[X,Y]=meshgrid(x,y);
-U = load('U.txt.');
-contourf(X,Y,U);

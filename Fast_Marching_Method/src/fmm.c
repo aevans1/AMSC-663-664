@@ -34,8 +34,8 @@ int fmm(int Nx, int Ny)
 
 			//Two point sources, specific speed function
 			get_coord(i,j,hx,hy,&v);		
-			//A[i*Nx + j].s = 1.0/(2.0 + 5.0*v.x + 20.0*v.y);
-			A[i*Nx + j].s = 1; //speed function identically 1, 1 point source
+			A[i*Nx + j].s = 1.0/(2.0 + 5.0*v.x + 20.0*v.y);
+			//A[i*Nx + j].s = 1; //speed function identically 1, 1 point source
 			A[i*Nx + j].U = INFTY;
 		}
 	}
@@ -48,7 +48,6 @@ int fmm(int Nx, int Ny)
 
 	//Define initial boundary
 	//
-	//Using two point sources:
 
 	//Define point source
 	//Mark center as 'Known', set U to 0
@@ -56,19 +55,26 @@ int fmm(int Nx, int Ny)
 	//make array of initial coords for boundary
 	int num_initial;
 	
-	/*One point source*/
-	num_initial = 1;
+
+	/*For defining a point source at (source_x,source_y) */
+	double source_x;
+	double source_y;
+
+	/*One point source example*/
+	//source_x = 0.0;
+	//source_y = 0.0;
+	//num_initial = 1;
+	//vect init[num_initial];
+	//init[0].x = source_x;
+	//init[0].y = source_y;
+
+	/*Two point source example*/
+	num_initial = 2;
 	vect init[num_initial];
 	init[0].x = 0.0;
 	init[0].y = 0.0;
-
-	/*Two point sources(see Cameron's note)*/
-	//num_initial = 2;
-	//vect init[num_initial];
-	//init[0].x = 0.0;
-	//init[0].y = 0.0;
-	//init[1].x = 0.8;
-	//init[1].y = 0.0;
+	init[1].x = 0.8;
+	init[1].y = 0.0;
 	
 	////////////////////////////////
 	/*Initialization of algorithm */
@@ -175,15 +181,16 @@ int fmm(int Nx, int Ny)
 			fprintf(fid,"%.6e\t",A[i*Nx + j].U);
 			aux_x = XMIN + hx*j;
 			
-			/*One point source, identital speed*/	
-			tmp = sqrt(aux_x*aux_x + aux_y*aux_y);
+			/*For one point source, identical speed*/	
+			//tmp = sqrt((aux_x - source_x)*(aux_x-source_x) + (aux_y-source_y)*(aux_y-source_y);
 			
 			/*For 2 point sources */
-			//s = 1.0/(2.0 + 5.0*aux_x + 20.0*aux_y);
-			//tmp1 = (1.0/sqrt(425.0))*acosh(1.0 + 0.5*0.5*s*425.0*((aux_x - 0)*(aux_x-0) + (aux_y - 0)*(aux_y - 0)));
-			//tmp2 = (1.0/sqrt(425.0))*acosh(1.0 + (1.0/6.0)*0.5*s*425.0*((aux_x - 0.8)*(aux_x-0.8) + (aux_y - 0)*(aux_y - 0)));
-			//tmp = fmin(tmp1,tmp2);
-			
+			s = 1.0/(2.0 + 5.0*aux_x + 20.0*aux_y);
+			tmp1 = (1.0/sqrt(425.0))*acosh(1.0 + 0.5*0.5*s*425.0*((aux_x - 0)*(aux_x-0) + (aux_y - 0)*(aux_y - 0)));
+			tmp2 = (1.0/sqrt(425.0))*acosh(1.0 + (1.0/6.0)*0.5*s*425.0*((aux_x - 0.8)*(aux_x-0.8) + (aux_y - 0)*(aux_y - 0)));
+			tmp = fmin(tmp1,tmp2);
+			//printf("%0.2f ",tmp);
+
 			err = fabs(A[i*Nx + j].U - tmp);
 			fprintf(gid,"%.6e\t",err);
 			if( err > max_err ) max_err = err;
@@ -215,7 +222,7 @@ int main()
 	//	Ny = pow(2,i) + 1;
 	//	fmm(Nx,Ny);
 	//}
-	
+
 	Nx = 2049;
 	Ny = 2049;
 	fmm(Nx,Ny);

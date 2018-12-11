@@ -12,6 +12,10 @@
 %dt - time step for atlas (default dt = delta/5, should be
 %O(delta/ln(1/delta))
 
+
+%seed rng
+rng(0);
+
 d = 1; %for 1-d examples, d = 1
 rho = @dist;
 delta = 0.1; 
@@ -25,18 +29,11 @@ t_0 = 0.01;
 %TESTING:
 [new_S,neighbors,net] = construction(S,init,delta,rho,m,p,t_0,d);
 
-%Trying to invertMDS, currently unsuccessful
-%
-%for n = 1:size(net,2)
-%	for m = 1:size(net,2)
-%	fprintf("%d,%d \n",n,m);
-%	C(n,m).C
-%	fprintf("new one! \n");
-%end
-%end
 
-V = [];
-test_set = [0:0.01:1];
+%Constructing effective potential
+test_set = [-0.2:0.01:1.2];
+B = new_S.B;
+Phi = new_S.Phi;
 for k = 1:length(test_set)
 	x = test_set(k);
 	%find closest chart
@@ -44,21 +41,19 @@ for k = 1:length(test_set)
 		distances(n) = norm(x - net(n));
 	end
 	i = find(distances == min(distances),1);
-		
-	B = new_S.B;
-	C = new_S.C;
-	Phi = new_S.Phi;
-	%invert MDS if d = 1
-	B = B/Phi(i).Phi;
-	V(k) = B(:,i);
+	%%invert MDS if d = 1
+	d(k) = B(i)/Phi(i).Phi;
 end
-plot(test_set,V);
+simple_plot(0.01,-0.2,1.5,d);
 
+%TESTING: just simulate at points, construct efffective potential from there?
+%Y(:,1:p) = S(0.5,p,t_0);
+%Y = Y - 0.5;
+%(1/(p*t_0))*sum(Y,2)
 
 
 %TESTING simulator
-x = 0.2;
-
+%x = 0.2;
 %Y(1) = x;
 % for t = 1:9
 	%find closest chart
@@ -71,6 +66,7 @@ x = 0.2;
 
 %plot([0:9],Y);
 
+%TESTING delta-net, landmarks
 %[net,neighbors] = delta_net(init,delta,rho);
 %A = create_landmarks(S,net,m,t_0);
 %
@@ -101,7 +97,6 @@ x = 0.2;
 %xlim([-0.2,1.2]);
 %title(['delta-net with landmarks']);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%NOTE: for now, passig in struct that give neighbor inndices, 'neighbors'
 function [x,j] = learned_simulator_step(x,i,new_S,neighbors,d,dt,delta)
 	%read in Struct new_S
 	C = new_S.C;
@@ -145,7 +140,7 @@ function [new_Sim,neighbors,net] = construction(S,init,delta,rho,m,p,t_0,d)
 %Create delta_net from initial points, create landmarks for delta_net
 	[net,neighbors] = delta_net(init,delta,rho);
 	A = create_landmarks(S,net,m,t_0);
-
+	
 	D = size(net,1); %assuming each column of delta_net is a data_point
 	N = size(net,2); %number of points in delta_net
 	X = zeros(D,p,N);
@@ -170,20 +165,28 @@ function [new_Sim,neighbors,net] = construction(S,init,delta,rho,m,p,t_0,d)
 		%nbr_landmarks(n).L = reshape(A(:,:,net_nbr),D,(m+1)*num_nbr);
 		L = reshape(A(:,:,net_nbr),D,(m+1)*num_nbr);
 
-		%NOTE: using pca instead of MDS right now, easier to invert for 1d
-		%NOTE: Phi(n) is matrix with cols as top d eigvecs of covariance matrix
-		%of landmarks L
+		%TESTING: experimenting with mean shifting
+		temp_L = L - mean(L,2);
+		
+		[embed_L(n).L,embed_X(n).X] = LMDS(L,X(:,:,n),rho,d);
+		
+		%TESTING: seeing what happens with no LMDS for 1d	
+		%embed_L(n).L = L;
+		%embed_X(n).X = X(:,:,n);
 
-		[embed_L(n).L,Phi(n).Phi,eigvals] = PCA(L,d);
-		embed_X(n).X = (Phi(n).Phi).' * X(:,:,n);
+		local_L = embed_L(n).L;
 
-		L./embed_L(n).L
-		%[embed_L(n).L,embed_X(n).X] = LMDS(L,X(:,:,n),rho,d);
-
-		%TESTING
+		%%Centering all data for chart around chart center
+		embed_L(n).L = embed_L(n).L - local_L(:,1);
+		embed_X(n).X = embed_X(n).X - local_L(:,1);
+		
+		%TESTING: finding +-1 multiplier from mds?
 		%local_L = embed_L(n).L;
-		%Phi(n).Phi = local_L(:,1)/L(:,1);
+		%Phi(n).Phi = local_L(:,1)/temp_L(:,1);
+		
+		%Currently setting mds multiplier as 1, won't affect diffusion coeffs.	
 		Phi(n).Phi = 1;
+
 	end
 
 	for n = 1:N
@@ -200,34 +203,28 @@ function [new_Sim,neighbors,net] = construction(S,init,delta,rho,m,p,t_0,d)
 		%landmarks...];
 		ind = [1:m+1:(m+1)*num_nbr];
 
-		%TESTING: centering everthing around y_n
-		local_X = local_X - local_L(:,1);
 
 		%%%Compute chart 'C_n' for y_n and center around embedded y_n
 		for i = 1:num_nbr
 			j = net_nbr(i); %global index of neighbor
-			C(n,j).C = local_L(:,ind(i)) - local_L(:,1); %find nbr and center
+			C(n,j).C = local_L(:,ind(i)); %find nbr and center
 		end
 	
-				%%%Compute Diffusion coefficients, drift coefficients around y_n
+		%%%Compute Diffusion coefficients, drift coefficients around y_n
 		B(:,n) = (1/ (p*t_0) )*sum(local_X,2); %drift for y_n
+
 		Sigma(:,n) = sqrt((1/t_0)*cov(local_X.',1)); %diffusion for y_n
 		
 		%%%Compute switching maps
-		%TODO: re-write this line
 		%Grab max index of nbr with global index less than n
 		%Switch ind corresponds to indices of L matrix rather than delta_net
 		
 		switch_ind = net_nbr(net_nbr < n);
 	
 		%NOTE: net_nbr = [n idx1 idx 2 ...], idx1 < idx 2 < ...
-
 		%NOTE: change this, too confusing, but switch_ind+1 is index of y_n
 		%landmarks in L matrix
 
-		%grab all landmarks for neighbors with index less than L
-		%nbr_L = local_L(:,1:switch_ind*(m+1)); 
-		%NOTE: change in,ni notation, this is terrible
 		for i = 1:length(switch_ind)
 			
 			j = switch_ind(i);
@@ -252,7 +249,6 @@ function [new_Sim,neighbors,net] = construction(S,init,delta,rho,m,p,t_0,d)
 			ind = find(nbr_switch_ind ==n);
 
 			%From paper: this is L_j,k
-			
 			L_jn(:,1:m+1) = local_nbr_L(:,1:m+1);  %nbr i wrt nbr i embedding	
 			L_jn(:,m+2:2*m+2) = local_nbr_L(:,(ind-1)*(m+1): ind*(m+1) - 1); %y_n  wrt nbr i embedding
 
@@ -264,7 +260,6 @@ function [new_Sim,neighbors,net] = construction(S,init,delta,rho,m,p,t_0,d)
 
 
 			%TODO: check linear algebra here
-			%T(n,j).T = pinv( (L_nj - mu(n,j).mu).' )*( (L_jn - mu(j,n).mu).' );
 			T(n,j).T = pinv(L_nj - mu(n,j).mu)*(L_jn - mu(j,n).mu);
 			T(j,n).T = pinv(L_jn - mu(j,n).mu)*(L_nj - mu(n,j).mu);
 		end
@@ -290,33 +285,6 @@ function [new_Sim,neighbors,net] = construction(S,init,delta,rho,m,p,t_0,d)
 	new_Sim.mu = mu;
 	new_Sim.Phi = Phi;	
 end
-
-%%TODO: comments
-%function construct_SDE(n,neighbors,C,B,Sigma,Local_L,Local_X,embed_L,embed_X,m,p,t_0)
-%	net_nbr = neighbors(n).nbr;
-%	num_nbr = length(net_nbr);
-%	
-%	local_L = embed_L(n).L;
-%	local_X = embed_X(n).X;
-%
-%	%select neighboring delta-net points:
-%	%local_L = [y_n |y_n landmarks |nbr1 |nbr 1landmarks |nbr2|nbr2
-%	%landmarks...];
-%	ind = [1:m+1:(m+1)*num_nbr];
-%
-%	%%%Compute chart 'C_n' for y_n and center around embedded y_n
-%	testing = [];
-%	for i = 1:num_nbr
-%		j = net_nbr(i); %global index of neighbor
-%		C(n,j).C = local_L(:,ind(i)) - local_L(:,1); %find nbr and center
-%	end
-%	
-%	%%%Compute Diffusion coefficients, drift coefficients around y_n
-%	B(:,n) = (1/p*t_0)*sum(local_X,2); %drift for y_n
-%	Sigma(:,n) = sqrt((1/t_0)*cov(local_X.',1)); %diffusion for y_n
-%
-%end
-
 
 function landmarks = create_landmarks(S,delta_net,m,t_0)
 %for each y in delta_net, run simulator m times for time t_0 each, keep
@@ -356,11 +324,11 @@ function [net,neighbors] = delta_net(init,delta,rho)
 %NOTE: all points in domain should be within delta of any net point, not sure
 %how to verify?
 %
-	%k = 1; %first net point index
-	k = randi(length(init)); %optional: random initial index
+	k = 1; %first net point index
+	%k = randi(length(init)); %optional: random initial index
 	net(:,1) = init(k);
 	init(:,k) = []; %remove point k from init to avoid double-counting
-	init = init(:,randperm(length(init))); %optional: random shuffle index
+	%init = init(:,randperm(length(init))); %optional: random shuffle index
 
 	%%%check each point of init set, add to net if far enough away
 	for n = 1:length(init)	

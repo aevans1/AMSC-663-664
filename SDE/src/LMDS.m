@@ -5,7 +5,7 @@ function [embed_L,embed_Z] = LMDS(L,Z,rho,d)
 	%D = size(L,1); %each column of L is a landmark vector in R^D
 	m = size(L,2); %number of landmark vectors
 	p = size(Z,2); %number of data vectors
-	
+
 	%TESTING:
 	L = L - mean(L,2);
 	Z = Z - mean(Z,2);
@@ -37,4 +37,5 @@ function [embed_L,embed_Z] = LMDS(L,Z,rho,d)
 		end
 		embed_Z(:,i) = (-1/2)*pinv_L*(dist_z - mean_square_dist);
 	end
+	embed_Z = PCA(embed_Z,d);
 end
