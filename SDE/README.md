@@ -1,6 +1,6 @@
-#ATLAS readme : Work in Progress!
+# ATLAS readme : Work in Progress!
 
-##Main File: atlas.m Description
+## Main File: atlas.m Description
 
 %%%%Main file for implementing the ATLAS algorithm
 
