@@ -7,14 +7,14 @@ m = size(X,2);
 
 Y = X - mean(X,2);
 
-[eigvecs,eigvals] = eig((1/m)*Y*Y.');
+[eigvecs,eigvals] = eig((1/(m-1))*Y*Y.');
 
 %sort eigenvectors in decreasing order of eigvals, keep
-[eigvals,ind] = sort(diag(eigvals),'descend')
+[eigvals,ind] = sort(diag(eigvals),'descend');
 reduced_ind = ind(1:d);
 
 %transform data
 eigvecs = eigvecs(:,reduced_ind);
-projection = (eigvecs.')*X;
+projection = (eigvecs.')*Y;
 
 end

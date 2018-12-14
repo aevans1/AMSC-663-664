@@ -12,39 +12,65 @@
 %dt - time step for atlas (default dt = delta/5, should be
 %O(delta/ln(1/delta))
 
+close all;
+
 
 %seed rng
-rng(0);
+rng(sum(clock));
 
 d = 1; %for 1-d examples, d = 1
 rho = @dist;
 delta = 0.1; 
 dt = delta/5;
-init = [0:0.01:1]; %initial point set for generating delta-net
+init = [-0.3:0.01:1.3]; %initial point set for generating delta-net
 S = @simulator;
 m = 5;
 p = 10000; %NOTE: p = 10,000 for 1d atlas example, eventually use this
-t_0 = 0.01;
+%t_0 = 0.01;
+t_0 = 0.02;
 
 %TESTING:
+
+
+for q = 1:5
 [new_S,neighbors,net] = construction(S,init,delta,rho,m,p,t_0,d);
 
-
 %Constructing effective potential
-test_set = [-0.2:0.01:1.2];
+test_set = [-0.25:0.01:1.25];
+%test_set_right = [0:0.01:1.25];
+%test_set_left = [-0.25:0.01:1];
 B = new_S.B;
 Phi = new_S.Phi;
 for k = 1:length(test_set)
 	x = test_set(k);
 	%find closest chart
 	for n = 1:size(net,2)
-		distances(n) = norm(x - net(n));
+		distances(n) = norm(x - net(:,n));
 	end
 	i = find(distances == min(distances),1);
 	%%invert MDS if d = 1
-	d(k) = B(i)/Phi(i).Phi;
+	%d(k) = B(i)/Phi(i).Phi;
+	%B approximates -grad U, so use -B
+	diffs(k) = -B(:,i)/Phi(i).Phi;
+	%fprintf("experiment: \n");
+	%diffs(k) = -t_0*B(:,i)/Phi(i).Phi;
+	%U(k) = 16*test_set(k)^2*(x-1)^2;
+	V(k) = 16*test_set(k)^2*(x-1)^2 + (1/6)*cos(100*pi*test_set(k));
 end
-simple_plot(0.01,-0.2,1.5,d);
+figure
+%simple_plot(0.01,-0.25,1.5,diffs);
+simple_plot(0.01,0.5,1,diffs);
+hold on;
+%plot(test_set,U);
+plot(test_set,V);
+
+%legend('$\hat{U}(x)$','U(x)');
+legend('$\hat{V}(x)$','V(x)');
+
+set(legend,'Interpreter','latex');
+end
+%figure(2)
+%plot(test_set,diffs);
 
 %TESTING: just simulate at points, construct efffective potential from there?
 %Y(:,1:p) = S(0.5,p,t_0);
@@ -67,7 +93,7 @@ simple_plot(0.01,-0.2,1.5,d);
 %plot([0:9],Y);
 
 %TESTING delta-net, landmarks
-%[net,neighbors] = delta_net(init,delta,rho);
+[net,neighbors] = delta_net(init,delta,rho);
 %A = create_landmarks(S,net,m,t_0);
 %
 %figure(1); hold on;
@@ -162,30 +188,56 @@ function [new_Sim,neighbors,net] = construction(S,init,delta,rho,m,p,t_0,d)
 
 		%store  points from neighboring landmarks as collection of columns
 		%associated to y_n
-		%nbr_landmarks(n).L = reshape(A(:,:,net_nbr),D,(m+1)*num_nbr);
 		L = reshape(A(:,:,net_nbr),D,(m+1)*num_nbr);
 
-		%TESTING: experimenting with mean shifting
-		temp_L = L - mean(L,2);
-		
-		[embed_L(n).L,embed_X(n).X] = LMDS(L,X(:,:,n),rho,d);
-		
-		%TESTING: seeing what happens with no LMDS for 1d	
-		%embed_L(n).L = L;
-		%embed_X(n).X = X(:,:,n);
 
+		%EXPERIMENT: experimenting with mean shifting
+		temp_L = L - mean(L,2);
+		temp_X = X(:,:,n) - mean(X(:,:,n),2);
+		%temp_X = X(:,:,n);
+		%TESTING: experimenting again with mean shifting
+		%L = L - L(:,1);
+		%X(:,:,n) = X(:,:,n) - L(:,1);
+		[embed_L(n).L,embed_X(n).X] = LMDS(L,X(:,:,n),rho,d);
+%
 		local_L = embed_L(n).L;
+
+		%TESTING: finding +-1 multiplier from mds?
+		local_L = embed_L(n).L;
+
+		%fprintf("ratio with original L: \n")
+		%local_L(:,1)./L(:,1)
+
+		%fprintf("ratio with mean-centered L: \n")
+		%local_L(:,1)./temp_L(:,1)
+		%
+		local_X = embed_X(n).X;
+		old_X = X(:,:,n);
+		%fprintf("ratio with original X: \n")
+		%local_X(:,1)/old_X(:,1)
+
+		%fprintf("ratio with mean-centered X: \n")
+		%local_X(:,1)./temp_X(:,1)
+
+		%fprintf("using mean-centered x ratio \n");
+		Phi(n).Phi = local_X(:,1)/temp_X(:,1);
+
+		%fprintf("using original x ratio \n");
+		%Phi(n).Phi = local_X(:,1)/old_X(:,1);
+
+
+		%Phi(n).Phi = local_L(:,1)/temp_L(:,1);
+
+		%TESTING: seeing what happens with no LMDS for 1d	
+		%embed_L(n).L = L*Phi(n).Phi;
+		%embed_X(n).X = X(:,:,n)*Phi(n).Phi;
 
 		%%Centering all data for chart around chart center
 		embed_L(n).L = embed_L(n).L - local_L(:,1);
 		embed_X(n).X = embed_X(n).X - local_L(:,1);
-		
-		%TESTING: finding +-1 multiplier from mds?
-		%local_L = embed_L(n).L;
-		%Phi(n).Phi = local_L(:,1)/temp_L(:,1);
-		
+
 		%Currently setting mds multiplier as 1, won't affect diffusion coeffs.	
-		Phi(n).Phi = 1;
+		%Phi(n).Phi = 1;
 
 	end
 
@@ -203,7 +255,6 @@ function [new_Sim,neighbors,net] = construction(S,init,delta,rho,m,p,t_0,d)
 		%landmarks...];
 		ind = [1:m+1:(m+1)*num_nbr];
 
-
 		%%%Compute chart 'C_n' for y_n and center around embedded y_n
 		for i = 1:num_nbr
 			j = net_nbr(i); %global index of neighbor
@@ -211,8 +262,11 @@ function [new_Sim,neighbors,net] = construction(S,init,delta,rho,m,p,t_0,d)
 		end
 	
 		%%%Compute Diffusion coefficients, drift coefficients around y_n
+		%fprintf("diffusion coefficient for delta-net point %f \n",net(n));
+		%(1/ (p*t_0) )*sum(local_X,2) %drift for y_n
 		B(:,n) = (1/ (p*t_0) )*sum(local_X,2); %drift for y_n
 
+		%fprintf("local average before normalizing for time: %f \n",(1/p)*sum(local_X,2));
 		Sigma(:,n) = sqrt((1/t_0)*cov(local_X.',1)); %diffusion for y_n
 		
 		%%%Compute switching maps
@@ -277,7 +331,7 @@ function [new_Sim,neighbors,net] = construction(S,init,delta,rho,m,p,t_0,d)
 	%	end
 	%end
 	
-	%Now: have chart centers C, drift coef B, diffusion coeff Sigma
+	%Now: we have chart centers C, drift coef B, diffusion coeff Sigma
 	new_Sim.T = T;
 	new_Sim.B = B;
 	new_Sim.C = C;
@@ -353,6 +407,13 @@ function [net,neighbors] = delta_net(init,delta,rho)
 			end
 		end
 		neighbors(n).nbr = list;
+		
+		%TESTING: checking if neighbors are next to net points(they should be)
+		%fprintf("neighbors of %f: \n",net(n));
+				%for i = 1:length(list)
+		%	list(i)
+		%	net(:,list(i))
+		%end
 	end
 end
 

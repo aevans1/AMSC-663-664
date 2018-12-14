@@ -25,7 +25,8 @@ function [path_end] = simulator(Xzero,m,T,plot_sim,plot_points)
 	%TODO: remove this? Yes, will put at top of different files
 	%rng(sum(clock));	%currently seeding rng differently every iteration
 
-	dt = 0.005; %Currently set at this value, as in ATLAS paper
+	%dt = 0.005; %Currently set at this value, as in ATLAS paper
+	dt = 0.00005;	
 	N = floor(T/dt);
 
 	%path_end will store m column vectors, same dimension as Xzero,
@@ -64,9 +65,12 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%f function for deterministic part, f(x)dt, of SDE above
 function out = f(x)
-	%In this case, f(x) = grad U, where U(x) = 16x^2(x-1)^2
+	%In this case, f(x) = -grad U, where U(x) = 16x^2(x-1)^2
 	%out=  32*x*(x-1)*(2*x-1);	
-	out = -32*x*(x-1)*(2*x-1);
+	%out = -32*x*(x-1)*(2*x-1);
+	out = -32*x*(x-1)*(2*x-1) + (1/6)*(100*pi)*sin(100*pi*x);
+
+
 end
 
 %%%plot trajectories of SDE
