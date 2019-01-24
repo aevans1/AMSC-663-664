@@ -1,10 +1,10 @@
-d =1;
-D = 1;
+d =3;
+D = 5;
 m = 10;
 
 X = randn(D,m);
 rho = @(x,y) norm(x-y);
-
+%%
 %Y = X - mean(X,2);
 Y = X;
 
@@ -21,18 +21,20 @@ end
 
 [mds_X,V,mds_eigvals] = MDS(square_dist,d);
 [pca_X,eigvecs,pca_eigvals] = PCA(X,d);
-pca_X == mds_X
-pca_X./mds_X
-pca_X - mds_X
+
+% fprintf("Is pca(X) == mds_X?");
+% pca_X == mds_X
+ fprintf("pcaX ./ mdsx = ");
+ pca_X./mds_X
+% fprintf("pcaX - mdsX = ");
+% 
+% pca_X - mds_X
 %mean(pca_X,1)
-mean(mds_X,2)
-mean(pca_X,2)
+%mean(mds_X,2)
+%mean(pca_X,2)
 %mds_X - mean(mds_X,2)
 %mds_X
 %fprintf("original X: \n");
-
-
-
 
 %fprintf("X ratio with PCA: \n");
 %pca_X./X

@@ -45,22 +45,23 @@ function [new_Sim,neighbors,net] = construction(S,init,delta,rho,m,p,t_0,d)
         temp_L = L - mean(L,2);
 		temp_X = X(:,:,n) - mean(X(:,:,n),2);		
         
-		[embed_L(n).L,embed_X(n).X] = LMDS(L,X(:,:,n),rho,d);
-
+		%[embed_L(n).L,embed_X(n).X] = LMDS(L,X(:,:,n),rho,d);
+        [embed_L(n).L,embed_X(n).X] = LMDS(temp_L,X(:,:,n),rho,d);
+        
 		local_L = embed_L(n).L;
 
         %TESTING: various comparisons to see what LMDS is doing in 1-D
 % 		fprintf("ratio with original L: \n")
 % 		local_L(:,1)./L(:,1)
 % 
-% 		fprintf("ratio with mean-centered L: \n")
-% 		local_L(:,1)./temp_L(:,1)		
+ 		fprintf("ratio with mean-centered L: \n")
+ 		local_L(:,1)./temp_L(:,1)		
 % 		
  		local_X = embed_X(n).X;
  		old_X = X(:,:,n);
 %  		
-%  		fprintf("ratio with original X: \n")
-%  		local_X(:,1)/old_X(:,1)
+  		fprintf("ratio with original X: \n")
+  		local_X(:,1)/old_X(:,1)
 % 
 % 		fprintf("ratio with mean-centered X: \n")
 % 		local_X(:,1)./temp_X(:,1)
@@ -152,27 +153,27 @@ function [new_Sim,neighbors,net] = construction(S,init,delta,rho,m,p,t_0,d)
 			mu(j,n).mu = mean(L_jn,2);
 
 			%T(n,j).T is transition map from chart n to chart j
-			%NOTE:*pseudo inv,  (X^*Y)^* = Y^*X
-			%T(j,n).T = pinv(L_jn - mu_jn)*(L_nj - mu_nj) = pinv(T(n,j).T)
+			%i.e, T(n,j).T*x changes x from chart n coords to chart j
+			%coords
+            
+ 			T(n,j).T = (L_jn - mu(j,n).mu)*pinv(L_nj - mu(n,j).mu);
+ 			T(j,n).T = (L_nj - mu(n,j).mu)*pinv(L_jn - mu(j,n).mu);
 
-			%TODO: check linear algebra here
-			T(n,j).T = pinv(L_nj - mu(n,j).mu)*(L_jn - mu(j,n).mu);
-			T(j,n).T = pinv(L_jn - mu(j,n).mu)*(L_nj - mu(n,j).mu);
-		end
+        end
 	end
 	
 	%%%Simulator now computed!	
 	%TESTING
-	%for n = 1:N
-	%	fprintf("neighbors of %d: \n",n);
-	%	nbr = neighbors(n).nbr
-	%	fprintf("transitions from index %d \n",n);
-	%	for i = 1:length(nbr)
-	%		fprintf("%d to %d \n",n,nbr(i));
-	%		T(n,nbr(i)).T	
-	%	end
-	%end
-	
+% 	for n = 1:N
+% 		fprintf("neighbors of %d: \n",n);
+% 		nbr = neighbors(n).nbr
+% 		fprintf("transitions from index %d \n",n);
+% 		for i = 1:length(nbr)
+% 			fprintf("%d to %d \n",n,nbr(i));
+% 			T(n,nbr(i)).T	
+% 		end
+% 	end
+% 	
 	%Now: we have chart centers C, drift coef B, diffusion coeff Sigma
 	new_Sim.T = T;
 	new_Sim.B = B;

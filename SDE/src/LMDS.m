@@ -10,18 +10,18 @@ function [embed_L,embed_Z] = LMDS(L,Z,rho,d)
 	%L = L - mean(L,2);
 	%Z = Z - mean(Z,2);
 
-	%%%%Compute distance matrix for X%
-	square_dist = zeros(m,m);
-	for i = 1:m
-		for j = 1:m
-			square_dist(i,j) = ( rho(L(:,i),L(:,j)) )^2;	
-		end
-	end
+	square_dist = compute_square_dist(L,rho);
 
+%     TESTING
+%     fprintf("squared distance matrix: ");
+%     square_dist
+    
+    size(square_dist)
 	%%%Step 1: MDS for landmarks L
 	%TODO: comment about output of this
 	[embed_L,V,eigvals] = MDS(square_dist,d);
-	%Pseudo-inverse transpose of embed_L(verify? Taking from LMDS paper)
+        
+	%Pseudo-inverse transpose of embed_L
 	pinv_L = (diag(eigvals))^(-1/2)*V.';
 	%%%%Step 2: Project each data point to R^d based on Landmark embedding
 	dist_z = ones(m,1); %initialize distance vectors for data
@@ -36,5 +36,7 @@ function [embed_L,embed_Z] = LMDS(L,Z,rho,d)
 		end
 		embed_Z(:,i) = (-1/2)*pinv_L*(dist_z - mean_square_dist);
 	end
-	embed_Z = PCA(embed_Z,d);
+ 	embed_Z = PCA(embed_Z,d);
 end
+
+

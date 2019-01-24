@@ -22,11 +22,12 @@ function [path_end] = simulator(Xzero,m,T,plot_sim,plot_points)
 	if ~exist('plot_points','var'), plot_points = false; end
 	%%%
 
-	%TODO: remove this? Yes, will put at top of different files
-	%rng(sum(clock));	%currently seeding rng differently every iteration
-
-	%dt = 0.005; %Currently set at this value, as in ATLAS paper
-	dt = 0.00005;	
+    %Uncomment for smooth potential 1d
+	dt = 0.005; %Currently set at this value, as in ATLAS paper
+	
+    %Uncomment for rough potential 1d
+    %dt = 0.00005;	
+    
 	N = floor(T/dt);
 
 	%path_end will store m column vectors, same dimension as Xzero,
@@ -65,10 +66,12 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%f function for deterministic part, f(x)dt, of SDE above
 function out = f(x)
+    %example, 1d smooth potential
 	%In this case, f(x) = -grad U, where U(x) = 16x^2(x-1)^2
-	%out=  32*x*(x-1)*(2*x-1);	
-	%out = -32*x*(x-1)*(2*x-1);
-	out = -32*x*(x-1)*(2*x-1) + (1/6)*(100*pi)*sin(100*pi*x);
+	out = -32*x*(x-1)*(2*x-1);
+	
+    %example, 1d rough potential
+    %out = -32*x*(x-1)*(2*x-1) + (1/6)*(100*pi)*sin(100*pi*x);
 
 
 end
