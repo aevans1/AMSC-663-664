@@ -15,19 +15,20 @@ function [path_end] =learned_simulator(Yzero,m,dt,T,new_S,neighbors,d,delta,net,
 	Y = zeros(1,N+1); 
 	Y(1) = Yzero;
 
+    
+    %%%Read in chart center for locating points in reduced space
+    C = new_S.C;
+
+    
 	%%%Calculate m trajectories of SDE
 	for k = 1:m
-       
+
+        %%%Set initial chart of simulation
+        %%%TODO: figure out how to do this rigorously?
+        i = 1;
 		%%%Compute SDE until time dt*N
 		for j = 1:N
-            %find closest chart
-            for n = 1:size(net,2)
-                distances(n) = norm(Y(j) - net(n));
-            end
-            
-            i = find(distances == min(distances));
-            
-            Y(j+1) = learned_simulator_step(Y(j),i,new_S,neighbors,d,dt,delta);
+          [Y(j+1),i] = learned_simulator_step(Y(j),i,new_S,neighbors,d,dt,delta);
 		end
 		
 		%%%store terminal point in path_end

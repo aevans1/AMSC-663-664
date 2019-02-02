@@ -1,4 +1,4 @@
-function [net,neighbors] = delta_net(init,delta,rho)
+function [net,neighbors] = delta_net(init,delta,rho,is_random)
 %sub-sample delta-net from given initial set of points, following the
 %brute-force method given in section 3.1 of ATLAS paper
 %inputs: init - D X N matrix, set of N vectors in R^d%
@@ -10,29 +10,43 @@ function [net,neighbors] = delta_net(init,delta,rho)
 %NOTE: all points in domain should be within delta of any net point, not sure
 %how to verify?
 %
-	k = 1; %first net point index
-	%k = randi(length(init)); %optional: random initial index
-	net(:,1) = init(k);
-	init(:,k) = []; %remove point k from init to avoid double-counting
-	%init = init(:,randperm(length(init))); %optional: random shuffle index
+%
+%
+	%%%Default mode is random
+	if ~exist('is_random','var'), is_random = true; end
 
-	%%%check each point of init set, add to net if far enough away
-	for n = 1:length(init)	
-		if far(init(n),net,delta,rho)
-			net(:,end+1) = init(n);
-		end
+
+	%%%%%%%%%%
+	%Step 1: Build the Delta Net
+	%%%%%%%%%%
+	
+	%%Random mode shuffles initial point set
+	if is_random
+		init = init(:,randperm(length(init)));
 	end
 
-	%NOTE: re-write this to be more efficient
+	net = [];
+
+	%%%check each point of init set, add to net if far enough away
+	for n = 1:size(init,2)	
+		if far(init(:,n),net,delta,rho)
+			net(:,end+1) = init(:,n);
+		end
+		fprintf("neighbors %d of %d initial points added \n",n,size(init,2));
+	end
+
+	%%%%%%%%%%
+	%Step 2: Find and store neighbors of each delta net point
+	%%%%%%%%%%
+
 	%%%Create struct of neighbors for delta-net: two net points y_n,y_m are connected if
 	%rho(y_n,y_m) < 2delta
-	N = length(net);
+	N = size(net,2);
 	neighbors = {};
 	for n = 1:N
 		list =[n]; %first neighbor of y_n will be y_n itself
 
-		%check net for neighbors, add those indices to struct
-		%NOTE: this include the point itself as its neighbor
+		%%%check net for neighbors, add those indices to struct
 		for m = 1:N
 			if rho(net(:,n),net(:,m))<2*delta && m ~= n
 				list(end+1) = m;
@@ -46,6 +60,7 @@ function [net,neighbors] = delta_net(init,delta,rho)
 		%	list(i)
 		%	net(:,list(i))
 		%end
+		fprintf("neighbors for net point %d of %d finished \n",n,N);
 	end
 end
 
@@ -59,11 +74,29 @@ function is_far = far(x,net,delta,rho)
 
 	%Check is x is far away from net
 	while (is_far && k <= N)
-		if rho(x,net(k)) < delta
+		if rho(x,net(:,k)) < delta
 			is_far = false; %break!
 		else
 			k = k+1;
 		end
 	end
-
 end
+
+%function close_index = delta_check(x,net,delta,rho)
+%	is_far = true;
+%	N = size(net,2);
+%	k = 1;
+%
+%	%Check is x is far away from net
+%	while (is_far && k <= N)
+%		if rho(x,net(:,k)) < delta
+%			is_far = false; %break!
+%		else
+%			k = k+1;
+%		end
+%	end
+%
+%	%returns N + 1 if no close indices
+%	close_index = k;
+%end
+

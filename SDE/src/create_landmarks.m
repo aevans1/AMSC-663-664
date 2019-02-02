@@ -20,7 +20,7 @@ function landmarks = create_landmarks(S,delta_net,m,t_0)
 	for n = 1:N
 	%generate m paths, save endpoints for delta_net point n
 	%NOTE: %first point in landmark list is the %delta_net point itself
-			landmarks(:,1,n) = delta_net(n);
-			landmarks(:,2:m+1,n) = S(delta_net(n),m,t_0);
+			landmarks(:,1,n) = delta_net(:,n);
+			landmarks(:,2:m+1,n) = S(delta_net(:,n),m,t_0);
 		end
 end

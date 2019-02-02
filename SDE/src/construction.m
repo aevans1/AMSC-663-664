@@ -16,7 +16,10 @@ function [new_Sim,neighbors,net] = construction(S,init,delta,rho,m,p,t_0,d)
 
 	
 %%%Create delta_net from initial points, create landmarks for delta_net
-	[net,neighbors] = delta_net(init,delta,rho);
+
+	%TEMPORARY
+	load('atlas_driver','net','neighbors');
+	%[net,neighbors] = delta_net(init,delta,rho);
 	A = create_landmarks(S,net,m,t_0);
 	
 	D = size(net,1); %assuming each column of delta_net is a data_point
@@ -44,41 +47,48 @@ function [new_Sim,neighbors,net] = construction(S,init,delta,rho,m,p,t_0,d)
         %Comparing mean-0 versions of L and X with LMDS outputs, 1-d only
         temp_L = L - mean(L,2);
 		temp_X = X(:,:,n) - mean(X(:,:,n),2);		
-        
-		%[embed_L(n).L,embed_X(n).X] = LMDS(L,X(:,:,n),rho,d);
-        [embed_L(n).L,embed_X(n).X] = LMDS(temp_L,X(:,:,n),rho,d);
+       
+		%Still don't know which of these to pick
+		tic
+		[embed_L(n).L,embed_X(n).X] = LMDS(L,X(:,:,n),rho,d);
+		LMDS_time = toc
+        %[embed_L(n).L,embed_X(n).X] = LMDS(temp_L,X(:,:,n),rho,d);
         
 		local_L = embed_L(n).L;
+		local_X = embed_X(n).X;
+ 		old_X = X(:,:,n);
+
+		%TODO: change this
+		Phi(n).Phi = [];
+		%%%%Note:D = d = 1 case only!
+		%Here Phi is whatever was multiplied by X's to get embedding
+		if d ==1 && D ==1
+			Phi(n).Phi = local_X(:,1)/temp_X(:,1);
+		end
+		%Phi(n).Phi = local_X(:,1)/old_X(:,1);
+		%Phi(n).Phi = local_L(:,1)/temp_L(:,1);
+		%%%%%
 
         %TESTING: various comparisons to see what LMDS is doing in 1-D
 % 		fprintf("ratio with original L: \n")
 % 		local_L(:,1)./L(:,1)
 % 
- 		fprintf("ratio with mean-centered L: \n")
- 		local_L(:,1)./temp_L(:,1)		
+%  		fprintf("ratio with mean-centered L: \n")
+%  		local_L(:,1)./temp_L(:,1)		
 % 		
- 		local_X = embed_X(n).X;
- 		old_X = X(:,:,n);
-%  		
-  		fprintf("ratio with original X: \n")
-  		local_X(:,1)/old_X(:,1)
+   		%fprintf("ratio with original X: \n")
+   		%local_X(:,1)/old_X(:,1)
 % 
 % 		fprintf("ratio with mean-centered X: \n")
 % 		local_X(:,1)./temp_X(:,1)
-
-		%fprintf("using mean-centered x ratio \n");
-		%Here Phi is whatever was multiplied by X's to get embedding
-		Phi(n).Phi = local_X(:,1)/temp_X(:,1);
-
-		%fprintf("using original x ratio \n");
-		%Phi(n).Phi = local_X(:,1)/old_X(:,1);
-
-		%Phi(n).Phi = local_L(:,1)/temp_L(:,1);
 
 		%TESTING: seeing what happens with no LMDS for 1d	
 		%embed_L(n).L = L*Phi(n).Phi;
 		%embed_X(n).X = X(:,:,n)*Phi(n).Phi;
 
+        %TESTING: collecting non-centered chart images of net points
+        %image(n).image = local_L(:,1);
+        
 		%%Centering all data for chart around chart center
 		embed_L(n).L = embed_L(n).L - local_L(:,1);
 		embed_X(n).X = embed_X(n).X - local_L(:,1);
@@ -180,6 +190,12 @@ function [new_Sim,neighbors,net] = construction(S,init,delta,rho,m,p,t_0,d)
 	new_Sim.C = C;
 	new_Sim.Sigma = Sigma;
 	new_Sim.mu = mu;
+	
+	%matters for D = d = 1 case only!
 	new_Sim.Phi = Phi;	
+	%
+    
+    %TESTING
+    %new_Sim.image = image;
 end
 

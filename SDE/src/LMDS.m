@@ -11,12 +11,7 @@ function [embed_L,embed_Z] = LMDS(L,Z,rho,d)
 	%Z = Z - mean(Z,2);
 
 	square_dist = compute_square_dist(L,rho);
-
-%     TESTING
-%     fprintf("squared distance matrix: ");
-%     square_dist
     
-    size(square_dist)
 	%%%Step 1: MDS for landmarks L
 	%TODO: comment about output of this
 	[embed_L,V,eigvals] = MDS(square_dist,d);

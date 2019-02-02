@@ -1,4 +1,6 @@
 function [x,j] = learned_simulator_step(x,i,new_S,neighbors,d,dt,delta)
+%TODO: fix new_i, j stuff
+
 %Given the learned simulator new_S, computes timestep at point x in chart i
 %inputs:    x- initial point for simulator
 %           i- chart index that x resides in
@@ -45,6 +47,7 @@ end
 %find global index for closest chart
 new_i =net_nbr(find(distances == min(distances),1));
 
+j = i; %j is new chart to be assigned to next sim step
 if new_i ~= i
     
     %TESTING
@@ -61,7 +64,9 @@ if new_i ~= i
     %         x
     %
     x = (T(i,new_i).T).' * (x - mu(i,new_i).mu) + mu(new_i,i).mu;
-
+    
+    %set new chart to i
+    j = new_i;
 end
 
 
@@ -69,11 +74,11 @@ end
 %Forward Euler step
 %take eta from gaussian N(0,eye(d))
 eta = (randn(d));
-x = x + B(:,i)*dt + (eta.')*Sigma(:,i)*sqrt(dt);
+x = x + B(:,j)*dt + eta*Sigma(:,j)*sqrt(dt);
 
 %prevent escape from local chart
 if norm(x) > (3/2)*delta
-    x = (1/norm(x))*x*(2*delta - (1/2)*delta*exp(3 - (2/delta)*norm(x)));
+     x = (1/norm(x))*x*(2*delta - (1/2)*delta*exp(3 - (2/delta)*norm(x)));
 end
 
 end
