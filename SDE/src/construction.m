@@ -18,8 +18,14 @@ function [new_Sim,neighbors,net] = construction(S,init,delta,rho,m,p,t_0,d)
 %%%Create delta_net from initial points, create landmarks for delta_net
 
 	%TEMPORARY
-	load('atlas_driver','net','neighbors');
-	%[net,neighbors] = delta_net(init,delta,rho);
+	%fprintf("WARNING: temporarily using loaded variables for delta net and
+	%neighbors \n");
+	%load('atlas_driver','net','neighbors');
+	
+	[net,neighbors] = delta_net(init,delta,rho);
+	
+	fprintf("delta net is.... \n");
+	net
 	A = create_landmarks(S,net,m,t_0);
 	
 	D = size(net,1); %assuming each column of delta_net is a data_point
@@ -48,12 +54,13 @@ function [new_Sim,neighbors,net] = construction(S,init,delta,rho,m,p,t_0,d)
         temp_L = L - mean(L,2);
 		temp_X = X(:,:,n) - mean(X(:,:,n),2);		
        
-		%Still don't know which of these to pick
-		tic
+				%TESTING: timing LMDS with tic/toc
+		%tic
+		%%Still don't know which of these to pick
 		[embed_L(n).L,embed_X(n).X] = LMDS(L,X(:,:,n),rho,d);
-		LMDS_time = toc
-        %[embed_L(n).L,embed_X(n).X] = LMDS(temp_L,X(:,:,n),rho,d);
-        
+	   %[embed_L(n).L,embed_X(n).X] = LMDS(temp_L,X(:,:,n),rho,d);
+        %LMDS_time = toc
+
 		local_L = embed_L(n).L;
 		local_X = embed_X(n).X;
  		old_X = X(:,:,n);

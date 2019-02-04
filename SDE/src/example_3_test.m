@@ -8,7 +8,7 @@ y_init = [-1:0.01:2];
 figure;
 U = arrayfun(@(X,Y) example_3(X,Y),X,Y);
 W = (U < 4).*U;
-[M,c] = contour(X,Y,W);
+[M,c] = contour(X,Y,W,20);
 c.LineWidth = 2;
 colormap(jet);
 colorbar;
@@ -25,9 +25,9 @@ init = [reduced_X(:)' ; reduced_Y(:)'];
 rho = @(p_1,p_2) norm(p_1 - p_2);
 delta = 0.2;
 
-size(init)
+size(init);
 [net,neighbors] = delta_net(init,delta,rho);
-size(net)
+size(net);
 for n = 1:size(net,2)
 	nbrs = neighbors(n).nbr;
 	num_nbr = size(nbrs,2);
@@ -41,7 +41,7 @@ end
 %hold on;
 
 %%%%%%%%%%%%%%%%%%%
-%TESTING: is the the correct function being plotted?
+%TESTING: is the the correct function being plotted for the gradient?
 %figure;
 %example_3_norm_grad = @(a,b) (norm(example_3_grad(a,b))^2);
 %Z = arrayfun(@(X,Y) example_3_norm_grad(X,Y),X,Y);
@@ -50,7 +50,6 @@ end
 %colorbar;
 %axis square;
 %%%%%%%%%%%%%%%%%%%
-
 function out = example_3(x_1,x_2)
 	x = [x_1 ; x_2];
 	c = [1/5;1/5;1/6];
@@ -59,7 +58,6 @@ function out = example_3(x_1,x_2)
 	p_3 = [0.8;1.05];
 	out =  -log( exp( (1/c(1))*(-norm(x - p_1)^2)) + exp( (1/c(2))*(-norm(x - p_2)^2)) + exp( (1/c(3))*(-norm(x - p_3)^2)));
 end
-
 function out = example_3_grad(x_1,x_2)
 	x = [x_1 ; x_2 ];
 	c = [1/5;1/5;1/6];

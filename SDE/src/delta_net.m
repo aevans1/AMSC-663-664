@@ -15,7 +15,6 @@ function [net,neighbors] = delta_net(init,delta,rho,is_random)
 	%%%Default mode is random
 	if ~exist('is_random','var'), is_random = true; end
 
-
 	%%%%%%%%%%
 	%Step 1: Build the Delta Net
 	%%%%%%%%%%
@@ -32,7 +31,9 @@ function [net,neighbors] = delta_net(init,delta,rho,is_random)
 		if far(init(:,n),net,delta,rho)
 			net(:,end+1) = init(:,n);
 		end
-		fprintf("neighbors %d of %d initial points added \n",n,size(init,2));
+		
+		%fprintf("neighbors %d of %d initial points added \n",n,size(init,2));
+	
 	end
 
 	%%%%%%%%%%
@@ -54,16 +55,13 @@ function [net,neighbors] = delta_net(init,delta,rho,is_random)
 		end
 		neighbors(n).nbr = list;
 		
-		%TESTING: checking if neighbors are next to net points(they should be)
-		%fprintf("neighbors of %f: \n",net(n));
-				%for i = 1:length(list)
-		%	list(i)
-		%	net(:,list(i))
-		%end
-		fprintf("neighbors for net point %d of %d finished \n",n,N);
+		%fprintf("neighbors for net point %d of %d finished \n",n,N);
+	
 	end
 end
 
+%%NOTE: cross-ref with test function file
+%%%NOTE: if input x is part of net, this will return false
 function is_far = far(x,net,delta,rho)
 %determine if point 'x' is at least delta-far from set of points 'net'
 %inputs: x is vector in R^D, net is D X N matrix, N vectors in net
@@ -82,21 +80,4 @@ function is_far = far(x,net,delta,rho)
 	end
 end
 
-%function close_index = delta_check(x,net,delta,rho)
-%	is_far = true;
-%	N = size(net,2);
-%	k = 1;
-%
-%	%Check is x is far away from net
-%	while (is_far && k <= N)
-%		if rho(x,net(:,k)) < delta
-%			is_far = false; %break!
-%		else
-%			k = k+1;
-%		end
-%	end
-%
-%	%returns N + 1 if no close indices
-%	close_index = k;
-%end
 

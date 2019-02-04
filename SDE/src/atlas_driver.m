@@ -1,3 +1,4 @@
+function atlas_driver(example)
 %%%%Main file for setting ATLAS parameters
 
 %S - Simulator, deafult: 1d maggioni example, see simulator.m
@@ -12,141 +13,118 @@
 %dt - time step for atlas (default dt = delta/5, should be
 %O(delta/ln(1/delta))
 
-close all;
-
 %seed rng
 rng(sum(clock));
 
+%Default example is 1
+if ~exist('example','var') example = 1; end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%Example 1: Smooth 1-dimensional Potential from ATLAS paper, ex. 5.2.1
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%d = 1;
-%rho = @dist;
-%delta = 0.1; 
-%dt = delta/5;
-%init = [-0.3:0.01:1.3]; %initial point set for generating delta-net
-%
-%m = 5;
-%p = 10000;
-%t_0 = 0.01;
-%
-%%Set up parameters for original simulator
-%f = @(x) example_1_grad(x);
-%dt_original = 0.005; %timestep for original simulator
-%S = @(Xzero,m,T) simulator(Xzero,m,T,f,dt_original);
-%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%Example 2: Rough 1-dimensional Potential from ATLAS paper, ex. 5.2.2
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%d = 1;
-%rho = @dist;
-%delta = 0.1; 
-%dt = delta/5;
-%init = [-0.3:0.01:1.3]; %initial point set for generating delta-net
-%S = @simulator;
-%m = 5;
-%p = 10000;
-%t_0 = 0.02;
-%
+%Input example determines which system is used for ATLAS
+switch example
+	
+	case 1
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	%Example 1: Smooth 1-dimensional Potential from ATLAS paper, ex. 5.2.1
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	d = 1;
+	rho = @dist;
+	delta = 0.1; 
+	dt = delta/5;
+	init = [-0.3:0.01:1.3]; %initial point set for generating delta-net
+	
+	m = 5;
+	p = 10000;
+	t_0 = 0.01;
+	
+	%Set up parameters for original simulator
+	f = @(x) example_1_grad(x);
+	dt_original = 0.005; %timestep for original simulator
+	S = @(Xzero,m,T) simulator(Xzero,m,T,f,dt_original);
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%Example 3: Smooth 2-D Potential from ATLAS paper, ex. 5.3.1
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-d = 2;
-rho = @dist;
-delta = 0.2; 
+	case 2
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	%Example 2: Rough 1-dimensional Potential from ATLAS paper, ex. 5.2.2
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	d = 1;
+	rho = @dist;
+	delta = 0.1; 
+	dt = delta/5;
+	init = [-0.3:0.01:1.3]; %initial point set for generating delta-net
+	S = @simulator;
+	m = 5;
+	p = 10000;
+	t_0 = 0.02;
 
-%initial  point set for generating delta-net, [-1,2.5] x [-1,2] grid
-%each col of init is (x,y) vector
-init_x = [-1:0.01:2.5];
-init_y = [-1:0.01:2]; 
-[init_X,init_Y] = meshgrid(init_x,init_y);
-temp_init = [init_X(:)';init_Y(:)'];
-Z = [];
-for i = 1:size(temp_init,2)
-	Z(i) = example_3(temp_init(:,i));
+	%Set up parameters for original simulator
+	f = @(x) example_2_grad(x);
+	dt_original = 0.00005; %timestep for original simulator
+	S = @(Xzero,m,T) simulator(Xzero,m,T,f,dt_original);
+
+	case 3
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	%Example 3: Smooth 2-D Potential from ATLAS paper, ex. 5.3.1
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	d = 2;
+	rho = @dist;
+	delta = 0.2; 
+	
+	%initial  point set for generating delta-net, [-1,2.5] x [-1,2] grid
+	%each col of init is (x,y) vector
+	init_x = [-1:0.01:2.5];
+	init_y = [-1:0.01:2]; 
+	[init_X,init_Y] = meshgrid(init_x,init_y);
+	temp_init = [init_X(:)';init_Y(:)'];
+	Z = [];
+	for i = 1:size(temp_init,2)
+		Z(i) = example_3(temp_init(:,i));
+	end
+	
+	%Removing all grid points with potential value below 10;
+	threshold = [Z < 10; Z < 10];
+	init = threshold.*temp_init;
+	init = init(:,any(init,1)); %removing zero columns
+	m = 5;
+	p = 10000;
+	t_0 = delta^2;
+	dt = t_0/5;
+	
+	%Set up parameters for original simulator
+	f = @(x) example_3_grad(x);
+	dt_original = 0.005; %timestep for original simulator
+	S = @(Xzero,m,T) simulator(Xzero,m,T,f,dt_original);
+	
+	otherwise
+		fprintf("enter a number (1-3) \n");
 end
 
-%Removing all grid points with potential value below 10;
-threshold = [Z < 10; Z < 10];
-init = threshold.*temp_init;
-init = init(:,any(init,1)); %removing zero columns
-m = 5;
-p = 10000;
-t_0 = delta^2;
-dt = t_0/5;
 
-%Set up parameters for original simulator
-f = @(x) example_3_grad(x);
-dt_original = 0.005; %timestep for original simulator
-S = @(Xzero,m,T) simulator(Xzero,m,T,f,dt_original);
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+fprintf("Running atlas for example %d ... \n ", example);
+
 [new_S,neighbors,net] = construction(S,init,delta,rho,m,p,t_0,d);
+test_dim1potential(example,new_S,net);
 
-%Yzero = rand();
-%T = 10;
-%Ypaths =learned_simulator(Yzero,p,dt,T,new_S,neighbors,d,delta,net);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%ATLAS TESTS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%figure;
-%histogram(Ypaths,10);
-%hold on;
+%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%TESTING: binning for original simulator
-%% init_x = rand();
-%init_x = Yzero;
-%%simulate p paths around net point y_n
-%X = S(init_x,p,T);
-%histogram(X,10);
+Yzero = rand();
+T = 10;
+Ypaths =learned_simulator(Yzero,p,dt,T,new_S,neighbors,d,delta,net);
 
-%%%TESTING 
-%%%Construction of Charts and Effective Potential, 1D 
-% 
-%  [new_S,neighbors,net] = construction(S,init,delta,rho,m,p,t_0,d);
-% % 
- %Constructing effective potential
-% test_set = [-0.25:0.01:1.25];
-% B = new_S.B;
-% Phi = new_S.Phi;
-% 
-% %%%effective potential plotting
-% U = [];
-% for k = 1:length(test_set)
-% 	x = test_set(k);
-% 	%find closest chart
-% 	for n = 1:size(net,2)
-% 		distances(n) = norm(x - net(:,n));
-% 	end
-% 	i = find(distances == min(distances),1);
-% 	%%invert MDS if d = 1
-% 	%d(k) = B(i)/Phi(i).Phi;
-% 	%B approximates -grad U, so use -B
-% 	diffs(k) = -B(:,i)/Phi(i).Phi;
-% 	%fprintf("experiment: \n");
-% 	%diffs(k) = -t_0*B(:,i)/Phi(i).Phi;
-% 	U(k) = 16*x^2*(x-1)^2;
-% 	%V(k) = 16*test_set(k)^2*(x-1)^2 + (1/6)*cos(100*pi*test_set(k));
-% end
-% figure
-% 
-%%OLD 
-% %piecewise_integrate(0.01,-0.25,1.25,diffs);
-% 
-% %Uncomment for example 2
-% piecewise_integrate(0.01,0.5,1,diffs);
-% hold on;
-% 
-% plot(test_set,U);
-% 
-% %Uncomment for test 2, rough potential
-% %plot(test_set,V);
-% 
-% legend('$\hat{U}(x)$','U(x)');
+figure;
+histogram(Ypaths,10);
+hold on;
+% init_x = rand();
+init_x = Yzero;
+%simulate p paths around net point y_n
+X = S(init_x,p,T);
+histogram(X,10);
+%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%Uncomment for test 2, rough potential
-%legend('$\hat{V}(x)$','V(x)');
 
-% set(legend,'Interpreter','latex');
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%TESTING
 %%%%simulator
 %x = 0.2;
@@ -161,8 +139,9 @@ S = @(Xzero,m,T) simulator(Xzero,m,T,f,dt_original);
 % end
 
 %plot([0:9],Y);
-%%%%
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%TESTING
 %%%delta-net, landmarks
 %[net,neighbors] = delta_net(init,delta,rho);
@@ -194,7 +173,11 @@ S = @(Xzero,m,T) simulator(Xzero,m,T,f,dt_original);
 %ylim([-1,size(net,2) + 1]);
 %xlim([-0.2,1.2]);
 %title(['delta-net with landmarks']);
-%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
+
+
+end
+%ending driver
 
 %%%%%%%%
 %Example 1: 1d smooth potential
@@ -204,7 +187,7 @@ function out = example_1(x)
 	out = 16*x^2*(x-1)^2;
 end
 function out = example_1_grad(x)
-    % -grad(example_1(x))
+    %%% -grad(example_1(x))
 	out = -32*x*(x-1)*(2*x-1);
 end
 
@@ -256,4 +239,53 @@ function distance = dist(x,y)
 %%%Distance function for euclidean space
 %inputs: n-dim colummn vectors x,y
 	distance = norm(x - y);
+end
+
+function test_dim1potential(example,new_S,net) 
+%Test function for approximated potentials in 1-dimensional examples 1 and 2 from above.
+%Plots approximated potential from ATLAS and compares with true potential
+%inputs: example - should be 1 or 2, corresponding to example 1 and example 2
+%		new_S - struct that contains ATLAS info, see new_S in construction
+%		function
+%		net - delta net for ATLAS, see delta_net function
+	switch example
+		case 1
+			U = @(x) 16*x^2*(x-1)^2;
+		case 2
+			U = @(x) 16*x^2*(x-1)^2 + (1/6)*cos(100*pi*x);
+		otherwise 
+			fprintf("Please input example = 1 or example = 2 \n");
+			return
+	end
+
+ 	test_set = [-0.25:0.01:1.25];
+ 	B = new_S.B;
+ 	Phi = new_S.Phi;
+ 	
+ 	%%%effective potential plotting in 1d
+ 	true_U = [];
+ 	for k = 1:length(test_set)
+ 		x = test_set(k);
+		true_U(k) = U(x);
+ 		
+		%find closest chart
+ 		for n = 1:size(net,2)
+ 			distances(n) = norm(x - net(:,n));
+ 		end
+ 		i = find(distances == min(distances),1);
+ 	
+		%TODO: more comments here
+ 	    % diffusion coefficent B approximates -grad U, so use -B
+ 		diffs(k) = -B(:,i)/Phi(i).Phi;
+ 	end
+
+ 	figure
+	
+	piecewise_integrate(0.01,0.5,1,diffs);
+ 	
+	hold on
+ 	plot(test_set,true_U);
+
+ 	legend('$\hat{U}(x)$','U(x)');
+ 	set(legend,'Interpreter','latex');
 end
