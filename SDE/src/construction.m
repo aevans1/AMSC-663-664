@@ -130,7 +130,7 @@ function [new_Sim,neighbors,net] = construction(S,init,delta,rho,m,p,t_0,d)
 		B(:,n) = (1/ (p*t_0) )*sum(local_X,2); %drift for y_n
 
 		%fprintf("local average before normalizing for time: %f \n",(1/p)*sum(local_X,2));
-		Sigma(:,n) = sqrt((1/t_0)*cov(local_X.',1)); %diffusion for y_n
+		Sigma(:,n) = sqrt(1/t_0)*sqrtm(cov(local_X.',1)); %diffusion for y_n
 		
 		%%%Compute switching maps
 		%Grab max index of nbr with global index less than n
