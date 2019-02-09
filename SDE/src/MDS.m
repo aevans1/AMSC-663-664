@@ -2,7 +2,6 @@ function [scaling,V,eigvals] = MDS(square_dist,d)
 %perform Mult-Dimensional Scaling on data_set X with distance function rho
 %inputs: square-dist - m x m matrix of square-d distances from a data set X,
 %with D rows and m columns, where each column is a data point
-%	     rho - metric for data set X
 %	     D - input dimension of data vectors of X
 %	     d - desired dimension for embedding data set
 %outputs: scaling - Matrix of embedded data points in R^d, columns are embedded

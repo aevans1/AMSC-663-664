@@ -37,8 +37,11 @@ function [new_Sim,neighbors,net] = construction(S,init,delta,rho,m,p,t_0,d)
 	%NOTE: better way to write this?
 	%For now, calculating the embedding for each data point, then doing ANOTHER
 	%for loop for rest of algorithm
+	%TODO: encapsulate below loop in this function	
+	%TODO: does X(:,,,) need to track everything?
+	%[embed_L,embed_X,Phi] = create_chart(S,init,delta,rho,net,neighbors,m,p,t_0,d)
 	for n = 1:N
-		%simulate p paths around net point y_n
+				%simulate p paths around net point y_n
 		X(:,1:p,n) = S(net(:,n),p,t_0);
 
 		%NOTE: redundancy here, over collecting landmarks?
@@ -102,12 +105,10 @@ function [new_Sim,neighbors,net] = construction(S,init,delta,rho,m,p,t_0,d)
 
 	end
 
+
 	for n = 1:N
-	
-    %TODO: write function to handle this for loop
-    %construct_SDE(n,neighbors,C,B,Sigma,local_L,local_X,embed_L,embed_X,m,p,t_0)
-	
     %%%%%Compute new simulator
+	%TODO: [C,B,Sigma] = compute_local_SDE(n,neighbors,embed_L,embed_X,C,B,Sigma,p,t_0)
 		net_nbr = neighbors(n).nbr;
 		num_nbr = length(net_nbr);
 		
@@ -123,6 +124,9 @@ function [new_Sim,neighbors,net] = construction(S,init,delta,rho,m,p,t_0,d)
 		for i = 1:num_nbr
 			j = net_nbr(i); %global index of neighbor
 			C(n,j).C = local_L(:,ind(i)); %find nbr and center
+			
+			%TODO: change data structure to	
+			%C(:,j,n) = local_L(:,ind(i));
 		end
 	
 		%%%Compute Diffusion coefficients, drift coefficients around y_n
@@ -130,13 +134,15 @@ function [new_Sim,neighbors,net] = construction(S,init,delta,rho,m,p,t_0,d)
 		B(:,n) = (1/ (p*t_0) )*sum(local_X,2); %drift for y_n
 
 		%fprintf("local average before normalizing for time: %f \n",(1/p)*sum(local_X,2));
-		Sigma(:,n) = sqrt(1/t_0)*sqrtm(cov(local_X.',1)); %diffusion for y_n
-		
+		%Sigma(:,n) = sqrt(1/t_0)*sqrtm(cov(local_X.',1)); %diffusion for y_n
+		Sigma(:,:,n) = sqrt(1/t_0)*sqrtm(cov(local_X.',1)); %diffusion for y_n
+
 		%%%Compute switching maps
+		%TODO: put under this function [T,mu] =compute_switching_maps(neighbors,embed_L,embed_X,T,mu)
+		
 		%Grab max index of nbr with global index less than n
 		%Switch ind corresponds to indices of L matrix rather than delta_net
-		
-        switch_ind = net_nbr(net_nbr < n);
+		switch_ind = net_nbr(net_nbr < n);
 	
 		%NOTE: net_nbr = [n idx1 idx 2 ...], idx1 < idx 2 < ...
 		%NOTE: change this, too confusing, but switch_ind+1 is index of y_n
@@ -172,10 +178,8 @@ function [new_Sim,neighbors,net] = construction(S,init,delta,rho,m,p,t_0,d)
 			%T(n,j).T is transition map from chart n to chart j
 			%i.e, T(n,j).T*x changes x from chart n coords to chart j
 			%coords
-            
  			T(n,j).T = (L_jn - mu(j,n).mu)*pinv(L_nj - mu(n,j).mu);
  			T(j,n).T = (L_nj - mu(n,j).mu)*pinv(L_jn - mu(j,n).mu);
-
         end
 	end
 	

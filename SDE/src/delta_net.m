@@ -1,5 +1,5 @@
 function [net,neighbors] = delta_net(init,delta,rho,is_random)
-%sub-sample delta-net from given initial set of points, following the
+%sub-samples initial set of points to create a delta-net, following the
 %brute-force method given in section 3.1 of ATLAS paper
 %inputs: init - D X N matrix, set of N vectors in R^d%
 %		 delta - coarseness of delta-net,
@@ -7,8 +7,6 @@ function [net,neighbors] = delta_net(init,delta,rho,is_random)
 %output: net - columns are data points, all distances >= delta apart
 %		 neighbors - struct array, each net point index has a struct with key value
 %		 'nbr' that stores the indices of close by net points
-%NOTE: all points in domain should be within delta of any net point, not sure
-%how to verify?
 %
 %
 %

@@ -109,6 +109,10 @@ test_dim1potential(example,new_S,net);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%TESTING: binning for original simulator
+fprintf("temporarily reducing number of calls to learned simulator \n");
+p = 5;
+
+
 Yzero = rand();
 T = 0.5;
 Ypaths =learned_simulator(Yzero,p,dt,T,new_S,neighbors,d,delta,net);

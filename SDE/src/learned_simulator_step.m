@@ -16,7 +16,7 @@ function [x,j] = learned_simulator_step(x,i,new_S,neighbors,d,dt,delta)
 %                   Sigma- drift coefficients for each chart, array of
 %                   form C(:,n) for chart n
 %                   mu- local coordinates for mean of common landmarks,
-%                   structy array with mu(n,j).mu representing the mean
+%                   struct array with mu(n,j).mu representing the mean
 %                   landmark for y_j U y_n, represented in chart y_n
 %                   Phi- 1-d case only, this is the MDS transformation
 %                   multiplier, Phi(n).Phi = +-1, transformation for chart
@@ -74,7 +74,7 @@ end
 %Forward Euler step
 %take eta from gaussian N(0,eye(d))
 eta = (randn(d));
-x = x + B(:,j)*dt + eta*Sigma(:,j)*sqrt(dt);
+x = x + B(:,j)*dt + eta*Sigma(:,:,j)*sqrt(dt);
 
 %prevent escape from local chart
 if norm(x) > (3/2)*delta

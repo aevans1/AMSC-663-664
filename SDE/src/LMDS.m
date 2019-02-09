@@ -1,14 +1,23 @@
 %Implementation of Landmark Multi-Dimensional Scaling for a given set of
 %Landmarks and Data
 function [embed_L,embed_Z] = LMDS(L,Z,rho,d)
-%TODO: comments
+%inputs:
+%	L - set of landmarks for Z, array with columns in R^D
+%		as landmark vectors
+%	Z - set of data points, array with columns in $\R^D$
+%		as data vectors
+%	rho - given distance function
+%	d - intrinsic dimension, LMDS projects columns of
+%					Z,L onto R^d
+%outputs:
+%   embed_L - MDS output for landmarks, array with
+%					columns in $\R^d$ as projected landmark vectors
+%   embed_Z - projected $Z$ data, array with columns
+%					in $\R^d$ as projected data vectors
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%	
 	%D = size(L,1); %each column of L is a landmark vector in R^D
 	m = size(L,2); %number of landmark vectors
 	p = size(Z,2); %number of data vectors
-
-	%TESTING:
-	%L = L - mean(L,2);
-	%Z = Z - mean(Z,2);
 
 	square_dist = compute_square_dist(L,rho);
     
