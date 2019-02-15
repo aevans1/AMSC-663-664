@@ -6,8 +6,6 @@ m = size(X,2);
 
 Y = X - mean(X,2);
 
-
-
 [eigvecs,eigvals] = eig((1/(m))*Y*Y.');
 
 %sort eigenvectors in decreasing order of eigvals, keep
