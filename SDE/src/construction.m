@@ -20,13 +20,16 @@ function [new_Sim,neighbors,net] = construction(S,init,delta,rho,m,p,t_0,d,load_
 %%%Create delta_net from initial points, create landmarks for delta_net
 %	TODO: better way to do this? Loading up structs if saved
 	if ~exist('load_net','var')
-		load_net =false;
+		load_net = false;
 	end
-	if load_net ==false
+	
+	if load_net == false  
 		[net,neighbors] = delta_net(init,delta,rho);
 	else
 		fprintf("Using loaded variables for delta net and neighbors\n");
-		load('preload','net','neighbors')
+		load('preload','net','neighbors');
+		fprintf('net is...\n');
+		net
 	end
 
 	%fprintf("delta net is.... \n");
@@ -92,53 +95,29 @@ function [new_Sim,neighbors,net] = construction(S,init,delta,rho,m,p,t_0,d,load_
 	%matters for D = d = 1 case only!
 	new_Sim.Phi = Phi;	
 	
-	save('construction');
+	filename =[datestr(now, 'dd_mmm_yyyy_HH_MM'),'_','d',num2str(d),'_','construction'];
+
+	save(filename);
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [local_L,local_X,Phi] = create_chart(X,L,rho,d,D);
 %TODO:comments	
-	
-	%TESTING:Comparing mean-0 versions of L and X with LMDS outputs
-        temp_L = L - mean(L,2);
-		temp_X = X - mean(X,2);		
-       
-		%TESTING: timing LMDS with tic/toc
+      			
 		%tic
-		%%Still don't know which of these to pick
 		[local_L,local_X] = LMDS(L,X,rho,d);
-	   %[local_L,local_X] = LMDS(temp_L,X,rho,d);
         %LMDS_time = toc
 
-		%TODO: change this
 		Phi = [];
+		if d ==1 && D ==1
 		%%%%Note:D = d = 1 case only!
 		%Here Phi is whatever was multiplied by X's to get embedding
-		if d ==1 && D ==1
+			temp_X = X - mean(L,2); 
 			Phi = local_X(:,1)/temp_X(:,1);
 		end
 		%%%%%
 
-
-        %TESTING: various comparisons to see what LMDS is doing in 1-D
-		%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
- 	%	fprintf("ratio with original L: \n")
- 	%	local_L(:,1)./L(:,1)
- 
-  	%	fprintf("ratio with mean-centered L: \n")
-  	%	local_L(:,1)./temp_L(:,1)		
- 	%	
-  	%	fprintf("ratio with original X: \n")
-  	%	local_X(:,1)/X(:,1)
- 
- 	%	fprintf("ratio with mean-centered X: \n")
- 	%	local_X(:,1)./temp_X(:,1)
-
-   	%	%TESTING: seeing what happens with no LMDS for 1d	
-   	%	local_L = L*Phi(n).Phi;
-   	%	local_X = X*Phi(n).Phi;
-
-      %%%Centering all data for chart around chart center
+        %%%Centering all data for chart around chart center
 		center = local_L(:,1);
 		local_L = local_L - center;
 		local_X = local_X - center;
@@ -170,9 +149,8 @@ function [T,C,B,Sigma,mu] = construct_local_SDE(n,neighbors,embed_L,embed_X,p,t_
 	B = (1/ (p*t_0) )*sum(local_X,2); %drift for y_n
 
 	%fprintf("local average before normalizing for time: %f \n",(1/p)*sum(local_X,2));
-	%Sigma = sqrt(1/t_0)*sqrtm(cov(local_X.',1)); %diffusion for y_n
-	Sigma = sqrt(1/t_0)*sqrtm(cov(local_X.',1)); %diffusion for y_n
-	
+	Sigma = sqrt(1/t_0)*sqrtm(cov(local_X.')); %diffusion for y_n
+
 
 	%%%Compute switching maps
 		

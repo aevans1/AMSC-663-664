@@ -3,31 +3,32 @@
 %on multiple atlas runs
 
 
-%%%ATLAS Example 3 delta net code
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%Example 3: Smooth 2-D Potential from ATLAS paper, ex. 5.3.1
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-rho = @(x,y) norm(x - y);
-delta = 0.2; 
-
-%initial  point set for generating delta-net, [-1,2.5] x [-1,2] grid
-%each col of init is (x,y) vector
-init_x = [-1:0.01:2.5];
-init_y = [-1:0.01:2]; 
-[init_X,init_Y] = meshgrid(init_x,init_y);
-temp_init = [init_X(:)';init_Y(:)'];
-Z = [];
-for i = 1:size(temp_init,2)
-	Z(i) = example_3(temp_init(:,i));
-end
-
-%Removing all grid points with potential value below 10;
-threshold = [Z < 10; Z < 10];
-init = threshold.*temp_init;
-init = init(:,any(init,1)); %removing zero columns
-
-[net,neighbors] = delta_net(init,delta,rho);
-
+%
+%%%%ATLAS Example 3 delta net code
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%Example 3: Smooth 2-D Potential from ATLAS paper, ex. 5.3.1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%rho = @(x,y) norm(x - y);
+%delta = 0.2; 
+%
+%%initial  point set for generating delta-net, [-1,2.5] x [-1,2] grid
+%%each col of init is (x,y) vector
+%init_x = [-1:0.01:2.5];
+%init_y = [-1:0.01:2]; 
+%[init_X,init_Y] = meshgrid(init_x,init_y);
+%temp_init = [init_X(:)';init_Y(:)'];
+%Z = [];
+%for i = 1:size(temp_init,2)
+%	Z(i) = example_3(temp_init(:,i));
+%end
+%
+%%Removing all grid points with potential value below 10;
+%threshold = [Z < 10; Z < 10];
+%init = threshold.*temp_init;
+%init = init(:,any(init,1)); %removing zero columns
+%
+%[net,neighbors] = delta_net(init,delta,rho);
+%
 save('preload');
 %%%%%%%%
 %Example 3: 2d Smooth Potential

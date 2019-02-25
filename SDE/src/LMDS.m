@@ -44,3 +44,6 @@ function [embed_L,embed_Z] = LMDS(L,Z,rho,d)
 end
 
 
+
+
+

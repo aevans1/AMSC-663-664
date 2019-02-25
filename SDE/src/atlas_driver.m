@@ -1,4 +1,4 @@
-function atlas_driver(example)
+function atlas_driver(example,load_net)
 %%%%Main file for setting ATLAS parameters
 
 %S - Simulator, deafult: 1d maggioni example, see simulator.m
@@ -13,11 +13,13 @@ function atlas_driver(example)
 %dt - time step for atlas (default dt = delta/5, should be
 %O(delta/ln(1/delta))
 
-%seed rng
-rng(sum(clock));
+seed = 1;
+fprintf("RNG seed: %d\n",seed);
+rng(seed);
 
-%Default example is 1
+%Default example is 1, Default is to not load up delta_net
 if ~exist('example','var') example = 1; end
+if ~exist('load_net','var') load_net = false; end
 
 %Input example determines which system is used for ATLAS
 switch example
@@ -35,10 +37,7 @@ switch example
 	p = 10000;
 	t_0 = delta^2;
 
-	%NOTE: in the paper, this is inconsistently labeled as one of these two
-	%values
 	dt = t_0/5;
-	%dt = delta/5;	
 	
 	%Set up parameters for original simulator
 	f = @(x) example_1_grad(x);
@@ -52,22 +51,23 @@ switch example
 	d = 1;
 	rho = @(x,y) norm(x - y);
 	delta = 0.1; 
-		init = [-0.3:0.01:1.3]; %initial point set for generating delta-net
+	init = [-0.3:0.01:1.3]; %initial point set for generating delta-net
+	
 	S = @simulator;
 	m = 5;
 	p = 10000;
 	t_0 = 0.02;
-
-	%NOTE: in the paper, this is inconsistently labeled as one of these two
-	%values
 	dt = t_0/5;
-	%dt = delta/5;	
 	
-
 	%Set up parameters for original simulator
 	f = @(x) example_2_grad(x);
 	dt_original = 0.00005; %timestep for original simulator
 	S = @(Xzero,m,T) simulator(Xzero,m,T,f,dt_original);
+
+	%As in the paper, run initial point set through simulator for time t= 0.01
+	for i = 1:length(init)
+		init(:,i) = S(init(:,i),1,0.01);
+	end
 
 	case 3
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -96,10 +96,7 @@ switch example
 	p = 10000;
 	t_0 = delta^2;
 	
-	%NOTE: in the paper, this is inconsistently labeled as one of these two
-	%values
 	dt = t_0/5;
-	%dt = delta/5;	
 
 	%Set up parameters for original simulator
 	f = @(x) example_3_grad(x);
@@ -113,121 +110,16 @@ end
 
 fprintf("Running atlas for example %d ... \n ", example);
 
-if example == 3 
-	save('atlas_2D');
-	[new_S,neighbors,net] = construction(S,init,delta,rho,m,p,t_0,d,true);
-	%2D_sim = new_S;
-	%2D_neighbors = neighbors;
-	%2D_net = net;
-	%save('atlas_driver','2D_sim','
-	save('atlas_2D');
-else
-	[new_S,neighbors,net] = construction(S,init,delta,rho,m,p,t_0,d);
-end
+[new_S,neighbors,net] = construction(S,init,delta,rho,m,p,t_0,d,load_net);
 
 if example == 1 || example == 2
 	dim1potential_test(example,new_S,net);
-	save('atlas_1D');
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%ATLAS TESTS
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%TESTING: binning for original simulator
-%fprintf("temporarily reducing number of calls to learned simulator \n");
-%p = 10000;
-%
-%
-%Yzero = rand();
-%T = 50;
-%[Ypaths,charts] =learned_simulator(Yzero,p,dt,T,new_S,neighbors,d,delta,net);
-%
-%inverse_Ypaths = [];
-%for i = 1:p
-%	inverse_Ypaths(:,i) = net(:,charts(i));
-%end
-%
-%
-%figure;
-%%histogram(Ypaths,10);
-%histogram(inverse_Ypaths,10);
-%hold on;
-%% init_x = rand();
-%init_x = Yzero;
-%%simulate p paths around net point y_n
-%X = S(init_x,p,T);
-%
-%%TODO: clean up
-%%bin the endpoints into delta net
-%X_delta = [];
-%for i = 1:p
-%	
-%	for n = 1:size(net,2)
-%    	distances(n) = norm(X(:,i) - net(:,n));
-%	end
-%	j =find(distances == min(distances),1);
-%	X_delta(:,i) = net(:,j);
-%end
-%
-%histogram(X_delta,10);
-%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%TESTING
-%%%%simulator
-%x = 0.2;
-%Y(1) = x;
-% for t = 1:9
-	%find closest chart
-% 	for n = 1:size(net,2)
-% 		distances(n) = norm(Y(t) - net(n));
-% 	end
-% 	i = find(distances == min(distances));
-% 	Y(t+1) = learned_simulator_step(Y(t),i,new_S,neighbors,d,dt,delta);
-% end
-
-%plot([0:9],Y);
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%TESTING
-%%%delta-net, landmarks
-%[net,neighbors] = delta_net(init,delta,rho);
-%A = create_landmarks(S,net,m,t_0);
-%
-%figure(1); hold on;
-%
-%for n = 1:size(net,2) 
-%    scatter(net(:,n), 0, 30,'b','filled');
-%end
-%
-%ylim([-1,size(net,2) + 1]);
-%xlim([-0.2,1.2]);
-%title(['delta-net on [0,1], delta = 0.1']);
-%%Plot landmarks for point n
-%figure(2);
-%hold on;
-%for n  = 1:size(net,2)
-%
-%	%pPlot each net-point with its landmarks
-%	scatter(A(:,1,n), 0,30, 'b','filled');
-%	scatter(A(:,2:m+1,n),0*ones(1,m),20,'r','filled');
-%	
-%	%optional, 1-d case: plot net-point and landmarks at different heights,
-%	%to illustrate that each set of landmarks stays near its net point
-%	scatter(A(:,1,n), n, 30 ,'b','filled');
-%	scatter(A(:,2:m+1,n),n*ones(1,m),20,'r','filled');
-%end
-%ylim([-1,size(net,2) + 1]);
-%xlim([-0.2,1.2]);
-%title(['delta-net with landmarks']);
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
+filename =[datestr(now, 'dd_mmm_yyyy_HH_MM'),'_','d',num2str(d),'_','atlas_driver'];
+save(filename);
 end
-%ending driver
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%
 %Example 1: 1d smooth potential
 %%%%%%%%
@@ -309,6 +201,7 @@ function dim1potential_test(example,new_S,net)
 
  	test_set = [-0.25:0.01:1.25];
  	B = new_S.B;
+	Sigma = new_S.Sigma;
  	Phi = new_S.Phi;
  	
  	%%%effective potential plotting in 1d
@@ -323,18 +216,53 @@ function dim1potential_test(example,new_S,net)
  		end
  		i = find(distances == min(distances),1);
  	
-		%TODO: more comments here
  	    % diffusion coefficent B approximates -grad U, so use -B
+		% dividing by Phi, reversing 1d LMDS mapping, i.e. divide by +-1
  		diffs(k) = -B(:,i)/Phi(i).Phi;
- 	end
+		sigma(k) = Sigma(:,:,i)/Phi(i).Phi;
+	end
 
  	figure
-	
-	piecewise_integrate(0.01,0.5,1,diffs);
- 	
-	hold on
- 	plot(test_set,true_U);
 
- 	legend('$\hat{U}(x)$','U(x)');
+	fprintf("Plotting approximated potential against true potential\n");
+	title('potentials');
+
+	n = round(length(test_set)/2);
+	piecewise_integrate(0.01,0.5,1,diffs);
+ 	hold on
+	plot(test_set,true_U);
+	legend('$\hat{U}(x)$','U(x)');
  	set(legend,'Interpreter','latex');
+	
+	figure
+	title('diffusion coeffs');
+	fprintf("Plotting approximated sigma against true sigma \n");
+	[sort_net,sort_ind] = sort(net);
+	new_sigma = Sigma(:);
+	plot(sort_net,new_sigma(sort_ind));
+	hold on;
+	true_sigma = ones(1,length(test_set));
+	plot(test_set,true_sigma);
+	ylim([0 1.5]);
+	xlim([-1 2]);
 end
+
+function is_close = close(x,net,delta,rho)
+%determine if point 'x' is closer than 2delta to some point in net
+%%inputs: x is vector in R^D, net is D X N matrix, N vectors in net
+%output: boolean, true if point is far from set
+	is_close = false;
+	N = size(net,2);
+	k = 1;
+
+	%Check is x is far away from net
+	while (~is_close && k <= N)
+		if rho(x,net(:,k)) > 0 & rho(x,net(:,k)) < 2*delta 
+			is_close = true; %break!
+		else
+			k = k+1;
+		end
+	end
+end
+
+

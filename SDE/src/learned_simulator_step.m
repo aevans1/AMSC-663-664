@@ -62,8 +62,6 @@ if j ~= i
 
 end
 
-
-
 %Forward Euler step
 %take eta from gaussian N(0,eye(d))
 eta = randn(d,1);
@@ -71,9 +69,12 @@ x = x + B(:,j)*dt + Sigma(:,:,j)*eta*sqrt(dt);
 
 %prevent escape from local chart
 if norm(x) > (3/2)*delta
-	 fprintf("TESTING local_simulator_step \n ");
-	 fprintf("Local chart escaped, corrected \n");
+	 %fprintf("Local chart escaped, corrected \n");
      x = (1/norm(x))*x*(2*delta - (1/2)*delta*exp(3 - (2/delta)*norm(x)));
+	 %fprintf("Checking if point was restricted: \n");
+	 %norm(x) < 2*delta
+end
 end
 
-end
+
+

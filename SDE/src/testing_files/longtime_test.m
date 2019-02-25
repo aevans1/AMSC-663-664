@@ -11,28 +11,19 @@ if ~exist('plot_points','var'), plot_points = false; end
 fprintf("Temporary: setting seed");
 seed = 1;
 rng(seed);
-p = 100;
-T = 0.2;
+p = 10000;
+T = 50;
 
 %Two ways: random sample initial locations, or all net points
-
-%1) Random samples
 num_locations = 10;
-
-%2) Sample from net
-%num_locations = size(net,2);
-
-%Following ATLAS, (example 2), use short sim of initial net to make delta net
 
 inverse_collection = zeros(d,num_locations*p);
 X_collection = zeros(d,num_locations*p);
 for m = 1:num_locations
 	
-	%1)Uniform sample from [-0.5,1.5];	
+	%Uniform sample from [-0.5,1.5];	
 	Xzero = 2*rand(d,1) - 0.5;
 
-	%2)Use net point
-	%Xzero = net(:,m);
 
 	%%%Simulate Y paths, bin
 
@@ -57,18 +48,7 @@ for m = 1:num_locations
 		inverse_Ypaths(:,i) = net(:,charts(i));
 	end
 	inverse_collection(1 + (m-1)*p: m*p) = inverse_Ypaths;
-
-	%Method 2: collect actual positions
-	%inverse_Ypaths = [];
-	%for i = 1:p
-	%	%reconstruct y in original state space
-	%	local_L = L(charts(i)).L;
-	%	local_Phi = Phi(charts(i)).Phi;
-	%	inverse_Ypaths(:,i) = (1/local_Phi)*(Ypaths(:,i)) + mean(local_L,2);
-	%end	
-	%inverse_collection(1 + (m-1)*p: m*p) = inverse_Ypaths;
-
-
+	
 	%%%Simulate X paths, bin
 	
 	init_x = Xzero;
@@ -86,15 +66,16 @@ for m = 1:num_locations
 		X_delta(:,i) = net(:,j);
 	end
 	X_collection(1 + (m-1)*p: m*p) = X_delta;	
-	
-	%Method 2: calculate actual trajectorses
-	%X_collection(1 + (m-1)*p: m*p) = X;
-	
 	fprintf("Finished binning samples for init point %d of %d \n",m,num_locations);
 
 end
 
 edges = [-0.5:delta:1.5];
+
+%centers = sort(net);
+%d = diff(centers)/2;
+%%edges = [centers(1) - d(1) centers(1:end-1) + d centers(end) + d(end)];
+
 
 figure;
 mu_hat = histogram(inverse_collection,edges);
@@ -102,10 +83,8 @@ hold on;
 
 mu = histogram(X_collection,edges);
 legend('reduced_sim','original_sim');
-
-filename =[datestr(now, 'dd_mmm_yyyy_HH_MM'),'_','d',num2str(d),'_','learned_simulator_test'];
+filename =[datestr(now, 'dd_mmm_yyyy_HH_MM'),'_','d',num2str(d),'_','longtime_test'];
 save(filename);
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%Test: Individual chart simulators
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
