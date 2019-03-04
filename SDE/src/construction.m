@@ -64,7 +64,7 @@ function [new_Sim,neighbors,net] = construction(S,init,delta,rho,m,p,t_0,d,load_
 		
 		%simulate p paths around net point y_n
 		X(:,1:p,n) = S(net(:,n),p,t_0);
-
+		
 		%%%%Take union of all neighboring landmarks to y_n
 		%net_nbr contains global indices of neighbor net points to netpoint n	
 		net_nbr = neighbors(n).nbr;
@@ -74,9 +74,33 @@ function [new_Sim,neighbors,net] = construction(S,init,delta,rho,m,p,t_0,d,load_
 		%associated to y_n
 		L(n).L = reshape(A(:,:,net_nbr),D,(m+1)*num_nbr);
 		
+		%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+		%TESTING: distances to net points from trajectories
+		%according to ATLAS paper, t_0 should be chosen so that 
+		%E[X - net(:,n)] ~ delta, likewise for landmarks L
+		%if D == 1	
+		%	dist_to_net =  mean(abs(X(:,:,n) - net(:,n)),2);
+		%else
+		%	dist_to_net =  mean(vecnorm(X(:,:,n) - net(:,n)),2);
+		%end
+
+		%fprintf("TESTING: avg distance from X to net point n:	%f",dist_to_net);	
+		%fprintf("	delta: 	%f\n",delta);
+		%[M,I] = max(abs(X(:,:,n) - net(:,n)));
+		%fprintf("TESTING: max distance from X to net point n:	%f, index %d \n",M,I);	
+		
+		%%%same test as above, but for landmarks	
+		%if D == 1	
+		%	dist_to_net =  mean(abs(L(n).L - net(:,n)),2);
+		%else
+		%	dist_to_net =  mean(vecnorm(L(n).L - net(:,n)),2);
+		%end
+		%fprintf("TESTING: avg distance from landmarks L to net point n:	%f \n",dist_to_net);	
+		%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+		
 		%%%Step 1:Create chart for each net point
 		[local_L,local_X,local_Phi] = create_chart(X(:,:,n),L(n).L,rho,d,D);
-		
+	
 		embed_L(n).L = local_L;
 		embed_X(n).X = local_X;
 		Phi(n).Phi = local_Phi;
@@ -84,6 +108,28 @@ function [new_Sim,neighbors,net] = construction(S,init,delta,rho,m,p,t_0,d,load_
 		%%%Step 2: constructing local SDE
 		[T,C,B(:,n),Sigma(:,:,n),mu] = construct_local_SDE(n,neighbors,embed_L,embed_X,p,t_0,m,d,T,C,mu);
 
+		%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+		%TESTING: distances to net points from trajectories
+		%if D ==1
+		%	dist_to_net =  mean(abs(local_X),2);
+		%else
+		%	dist_to_net =  mean(vecnorm(local_X),2);
+		%end
+		%fprintf("TESTING: avg distance from projected X to projected net point n:	%f",dist_to_net);	
+		%fprintf("	2delta: 	%f\n",2*delta);
+		%[M,I] = max(abs(local_X));
+		%fprintf("TESTING: max distance from projected X to projected net point n:	%f, index %d \n",M,I);	
+
+		%if d ==1
+		%	dist_to_net =  mean(abs(local_L),2);
+		%else
+		%	dist_to_net =  mean(vecnorm(local_L),2);
+		%end
+		%fprintf("TESTING: avg distance from projected L to projected net point n:	%f",dist_to_net);	
+		%fprintf("	2delta: 	%f\n",2*delta);
+		%[M,I] = max(abs(local_L));
+		%fprintf("TESTING: max distance from projected L to projected net point n:	%f, index %d\n",M,I);	
+		%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	end
 
 	new_Sim.T = T;
@@ -121,6 +167,7 @@ function [local_L,local_X,Phi] = create_chart(X,L,rho,d,D);
 		center = local_L(:,1);
 		local_L = local_L - center;
 		local_X = local_X - center;
+
 	end
 
 function [T,C,B,Sigma,mu] = construct_local_SDE(n,neighbors,embed_L,embed_X,p,t_0,m,d,T,C,mu)
@@ -153,7 +200,6 @@ function [T,C,B,Sigma,mu] = construct_local_SDE(n,neighbors,embed_L,embed_X,p,t_
 
 
 	%%%Compute switching maps
-		
 	%NOTE: net_nbr = [n idx1 idx 2 ...], idx1 < idx 2 < ...
 	for i = 1:num_nbr	
 		

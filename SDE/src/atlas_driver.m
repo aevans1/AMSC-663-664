@@ -13,7 +13,7 @@ function atlas_driver(example,load_net)
 %dt - time step for atlas (default dt = delta/5, should be
 %O(delta/ln(1/delta))
 
-seed = 1;
+seed = 2;
 fprintf("RNG seed: %d\n",seed);
 rng(seed);
 
@@ -38,7 +38,8 @@ switch example
 	t_0 = delta^2;
 
 	dt = t_0/5;
-	
+	%dt = delta/5;
+
 	%Set up parameters for original simulator
 	f = @(x) example_1_grad(x);
 	dt_original = 0.005; %timestep for original simulator

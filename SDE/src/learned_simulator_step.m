@@ -47,6 +47,7 @@ mu = new_S.mu;
 net_nbr = neighbors(i).nbr;
 num_nbr = length(net_nbr);
 distances = [];
+
 for n = 1:num_nbr
     j = net_nbr(n);
     distances(n) = norm(x - C(i,j).C);
@@ -61,7 +62,6 @@ if j ~= i
     x = (T(i,j).T)*(x - mu(i,j).mu) + mu(j,i).mu;
 
 end
-
 %Forward Euler step
 %take eta from gaussian N(0,eye(d))
 eta = randn(d,1);
