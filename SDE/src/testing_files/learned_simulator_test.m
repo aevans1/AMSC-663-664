@@ -7,6 +7,11 @@ setting = 'transition_paths';
 if ~exist('setting','var'), setting = 'sim_compare'; end
 %%
 
+setting_str = sprintf("%s",setting);
+filename =[datestr(now, 'dd_mmm_yyyy_HH_MM'),'_','d',num2str(d),'_','learned_simulator_test','_',setting];
+fileID = fopen([filename,'.txt'],'w');
+
+
 fprintf("Temporary: setting seed \n");
 seed = 1;
 fprintf("Seed: %d \n",seed);
@@ -45,6 +50,29 @@ for i = 1:length(regions)
 		end
 	end
 end
+
+
+fprintf(fileID,'example: %d\n',example);
+fprintf(fileID,'\n');
+fprintf(fileID,'delta=%f\n',delta);
+fprintf(fileID,'m=%d\n',m);
+fprintf(fileID,'t_0=%f\n',t_0);
+fprintf(fileID,'dt(ATLAS)=%f\n',dt);
+fprintf(fileID,'dt(original)=%f\n',dt_original);
+fprintf(fileID,'p=%d\n',p);
+fprintf(fileID,'T=%f\n',T);
+fprintf(fileID,'\n');
+
+fprintf(fileID,"Parameters from simulator testing: \n");
+fprintf(fileID,'regions = %d\n',regions);
+fprintf(fileID,'dist=%f\n',dist);
+fprintf(fileID,'num_locations=%d\n',num_locations);
+
+
+
+
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %TESTING: where to set Xzero?
@@ -161,8 +189,6 @@ for i = 1:length(regions)
 end
 
 
-
-
 switch setting
 	case 'sim_compare'
 		edges = [-0.5:delta:1.5];
@@ -182,7 +208,6 @@ switch setting
 	fprintf("ATLAS Sim, avg transition 1-->2: %f\n",Y_switch_averages(1,2));
 	fprintf("ATLAS Sim, avg transition 2-->1: %f\n",Y_switch_averages(2,1));
 end
-
-setting_str = sprintf("%s",setting);
-filename =[datestr(now, 'dd_mmm_yyyy_HH_MM'),'_','d',num2str(d),'_','learned_simulator_test','_',setting];
 save(filename);
+fclose(fileID);
+
