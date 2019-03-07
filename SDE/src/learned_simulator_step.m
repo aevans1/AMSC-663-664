@@ -44,23 +44,36 @@ Sigma = new_S.Sigma;
 T = new_S.T;
 mu = new_S.mu;
 
+%TESTING: reading in original chart centers
+centers = new_S.centers;
+
+
 net_nbr = neighbors(i).nbr;
 num_nbr = length(net_nbr);
 distances = [];
 
+%TODO: vectorize with neighbors
+%get rid of square root
+%get array of chart centers
 for n = 1:num_nbr
     j = net_nbr(n);
     distances(n) = norm(x - C(i,j).C);
 end
 
 %find global index for closest chart
-j = net_nbr(find(distances == min(distances),1));
+[~,min_dist] = min(distances);
+j = net_nbr(min_dist);
+ %j = net_nbr(find(distances == min(distances),1));
 
 if j ~= i
    
 	%set new chart to i
-    x = (T(i,j).T)*(x - mu(i,j).mu) + mu(j,i).mu;
+    %x = (T(i,j).T)*(x - mu(i,j).mu) + mu(j,i).mu;
 
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %TESTING: for d = D = 1 case and no LMDS, changing charts is shifting
+    %centers
+    x = x + centers(i) - centers(j); 
 end
 %Forward Euler step
 %take eta from gaussian N(0,eye(d))

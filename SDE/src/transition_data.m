@@ -1,4 +1,4 @@
-function [times,averages] = transition_data(regions,paths)
+function [times,averages] = transition_data(regions,paths,dt)
 %Given a list of regions visited (paths), e.g. [1 2 0 1 1 2],
 %and specified regions of interest,e.g. [1 2], returns transition times between
 %regions
@@ -13,7 +13,7 @@ function [times,averages] = transition_data(regions,paths)
 for i = 1:length(regions)
 	for j = i+1:length(regions)
 		if j ~= i
-			i_to_j =switch_times(regions(i),regions(j),paths);
+			i_to_j =switch_times(regions(i),regions(j),paths,dt);
 			times(i,j).list = i_to_j;
 			averages(i,j) = mean(i_to_j);
 
@@ -23,7 +23,7 @@ for i = 1:length(regions)
 			%fprintf("average time from %d to %d: %f \n",regions(i),regions(j), mean(i_to_j));
 			%fprintf("\n");
 			
-			j_to_i = switch_times(regions(j),regions(i),paths);
+			j_to_i = switch_times(regions(j),regions(i),paths,dt);
 			times(j,i).list = j_to_i;
 			times(j,i).list = j_to_i;
 			averages(j,i) = mean(j_to_i);
@@ -36,7 +36,7 @@ for i = 1:length(regions)
 	end
 end
 end
-function times = switch_times(a,b,paths)
+function times = switch_times(a,b,paths,dt)
 %Given a list of regions visited (paths), e.g. [1 2 0 1 1 2],
 % and regions a, b e.g. a = 1, b = 2, returns list of transition times from a
 % to b in paths
@@ -77,5 +77,6 @@ function times = switch_times(a,b,paths)
 		else
 			i = length(paths); %break
 		end
-	end
+    end
+    times = dt*times; %normalize to get actual times
 end

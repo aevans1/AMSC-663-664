@@ -5,12 +5,10 @@
 setting = 'transition_paths';
 %%%TESTING: binning for original simulator
 if ~exist('setting','var'), setting = 'sim_compare'; end
-%%
 
 setting_str = sprintf("%s",setting);
 filename =[datestr(now, 'dd_mmm_yyyy_HH_MM'),'_','d',num2str(d),'_','learned_simulator_test','_',setting];
 fileID = fopen([filename,'.txt'],'w');
-
 
 fprintf("Temporary: setting seed \n");
 seed = 1;
@@ -68,12 +66,10 @@ fprintf(fileID,'regions = %d\n',regions);
 fprintf(fileID,'dist=%f\n',dist);
 fprintf(fileID,'num_locations=%d\n',num_locations);
 
-
-
-
-
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%TESTING: reading in chart centers, to use to subtract from init points
+centers = new_S.centers;
+
 
 %TESTING: where to set Xzero?
 %NOTE: doesn't seem to affect transition results
@@ -101,12 +97,23 @@ for m = 1:num_locations
 
 % 	Embed initial condition for original simulator so it can berun in reduced
 % 	simulator
-	[local_L,Yzero] = LMDS(L(init_chart).L,Xzero,rho,d);
 	
+
+
+    
+    if no_LMDS
+        %TESTING: for d = D = 1, not doing LMDS
+        fprintf("TESTING: not doing LMDS for init chart point \n");
+        Yzero = Xzero;
+    else
+        [local_L,Yzero] = LMDS(L(init_chart).L,Xzero,rho,d);
+    end
+    
 % 	Center projected point around the chart center
-	Yzero = Yzero - local_L(:,1);
-	
-	  [Ypaths,charts,Y_regions_visited] =learned_simulator(Yzero,p,dt,T,new_S,neighbors,d,delta,net,init_chart,regions,dist);
+	%Yzero = Yzero - local_L(:,1);
+    Yzero = Yzero - centers(:,init_chart);
+    
+	[Ypaths,charts,Y_regions_visited] =learned_simulator(Yzero,p,dt,T,new_S,neighbors,d,delta,net,init_chart,regions,dist);
 
  	%%%%Map reduced sim paths back to delta net in original space
 	inverse_Ypaths = [];
@@ -116,7 +123,7 @@ for m = 1:num_locations
 	inverse_collection(:,1 + (m-1)*p: m*p) = inverse_Ypaths;
 
 	%%%Collect transition data between regions of interest
-	[Y_switch_times] = transition_data(regions,Y_regions_visited);
+	[Y_switch_times] = transition_data(regions,Y_regions_visited,dt);
 	for i = 1:length(regions)
 		for j = i + 1: length(regions)
 			if j~=i
@@ -154,7 +161,7 @@ for m = 1:num_locations
 	X_collection(:,1 + (m-1)*p: m*p) = X_delta;	
 
 	%%%Collect transition data between regions of interest
-	[X_switch_times] = transition_data(regions,X_regions_visited);
+	[X_switch_times] = transition_data(regions,X_regions_visited,dt);
 	for i = 1:length(regions)
 		for j = i + 1: length(regions)
 			if j~=i
@@ -201,9 +208,21 @@ switch setting
 		legend('reduced_sim','original_sim');
 	
 	case 'transition_paths'
-	%applies for either of example 1 or 2
+	
+    %applies for either of example 1 or 2
 	%TODO: print statement with example number, relevant parameters, etc.
-	fprintf("Original Sim, avg transition 1-->2: %f\n",X_switch_averages(1,2));
+	X_switch_bar = X_switch_averages.';
+	X_switch_bar = X_switch_bar(:);
+	Y_switch_bar = Y_switch_averages.';
+	Y_switch_bar = Y_switch_bar(:);
+	figure;
+	hold on;
+	bar([X_switch_bar,Y_switch_bar]);
+	xticks([1:2]);
+	xticklabels({'1->2','2->1'});
+	set(gca,'Fontsize',20);
+	ylabel('Mean transition time','Fontsize',20);
+    fprintf("Original Sim, avg transition 1-->2: %f\n",X_switch_averages(1,2));
 	fprintf("Original Sim, avg transition 2-->1: %f\n",X_switch_averages(2,1));
 	fprintf("ATLAS Sim, avg transition 1-->2: %f\n",Y_switch_averages(1,2));
 	fprintf("ATLAS Sim, avg transition 2-->1: %f\n",Y_switch_averages(2,1));

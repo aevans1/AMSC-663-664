@@ -3,6 +3,14 @@ function [path_end,chart_end,regions_visited] =learned_simulator(Yzero,m,dt,T,ne
     %timestep of i-th path simulated
 %TODO:comments
 
+
+%Build array of wells assigned to charts
+wells = zeros(1,size(net,2));
+for n = 1:size(net,2)
+    wells(n) = check_region(net(:,n),regions,dist);
+end
+
+
 %%%optional parameters, for plotting
 	if ~exist('plot_sim','var'), plot_sim = false; end
 	if ~exist('plot_points','var'), plot_points = false; end
@@ -19,8 +27,8 @@ function [path_end,chart_end,regions_visited] =learned_simulator(Yzero,m,dt,T,ne
 	Y = zeros(d,N+1); 
 	Y(:,1) = Yzero;
     
-	%%%Read in chart center for locating points in reduced space
-    C = new_S.C;
+    
+    
     
 	%%%Calculate m trajectories of SDE
     regions_visited = zeros(m,N+1); %for tracking where paths go
@@ -30,6 +38,7 @@ function [path_end,chart_end,regions_visited] =learned_simulator(Yzero,m,dt,T,ne
 		%%%Compute SDE until time dt*N
 		for j = 1:N
           [Y(:,j+1),new_chart] = learned_simulator_step(Y(:,j),chart(j),new_S,neighbors,d,dt,delta);
+                    
 		  chart(j+1) = new_chart;
 		end
 		
@@ -40,7 +49,7 @@ function [path_end,chart_end,regions_visited] =learned_simulator(Yzero,m,dt,T,ne
         %%%input
         if ~isempty(regions)
            for j = 1:N+1
-                regions_visited(k,j) = check_region(net(chart(j)),regions,dist);
+                %regions_visited(k,j) = check_region(net(chart(j)),regions,dist);
            end
         end      
 		path_end(:,k) = Y(:,N+1); 
