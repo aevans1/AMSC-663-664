@@ -5,7 +5,6 @@
 setting = 'transition_paths';
 %%%TESTING: binning for original simulator
 if ~exist('setting','var'), setting = 'sim_compare'; end
-%%
 
 setting_str = sprintf("%s",setting);
 filename =[datestr(now, 'dd_mmm_yyyy_HH_MM'),'_','d',num2str(d),'_','learned_simulator_test','_',setting];

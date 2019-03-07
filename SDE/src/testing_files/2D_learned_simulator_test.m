@@ -11,7 +11,6 @@ setting_str = sprintf("%s",setting);
 filename =[datestr(now, 'dd_mmm_yyyy_HH_MM'),'_','d',num2str(d),'_','learned_simulator_test','_',setting];
 fileID = fopen([filename,'.txt'],'w');
 
-
 fprintf("Temporary: setting seed \n");
 seed = 1;
 fprintf("Seed: %d \n",seed);

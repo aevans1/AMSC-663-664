@@ -13,7 +13,7 @@ function atlas_driver(example,load_net)
 %dt - time step for atlas (default dt = delta/5, should be
 %O(delta/ln(1/delta))
 
-seed = 2;
+seed = 1;
 fprintf("RNG seed: %d\n",seed);
 rng(seed);
 
@@ -119,6 +119,7 @@ end
 
 filename =[datestr(now, 'dd_mmm_yyyy_HH_MM'),'_','d',num2str(d),'_','atlas_driver'];
 save(filename);
+save("current_atlas_driver");
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%

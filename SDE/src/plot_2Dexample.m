@@ -27,7 +27,7 @@ for n = 1:size(net,2)
 	num_nbr = size(nbrs,2);
 	for i = 1:num_nbr
 		nbr = nbrs(i);
-		plot([net(1,n),net(1,nbr)],[net(2,n),net(2,nbr)],'-o','Color','k','MarkerFaceColor','b');
+		plot([ net(1,n),net(1,nbr)],[net(2,n),net(2,nbr)],'-o','Color','k','MarkerFaceColor','b');
 	end
 end
 hold off;
