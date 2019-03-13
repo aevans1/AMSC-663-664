@@ -12,27 +12,23 @@ function [times,averages] = transition_data(regions,paths,dt)
 %NOTE: regions length should be bigger than 1, else nothing gets returned
 for i = 1:length(regions)
 	for j = i+1:length(regions)
-		if j ~= i
-			i_to_j =switch_times(regions(i),regions(j),paths,dt);
-			times(i,j).list = i_to_j;
-			averages(i,j) = mean(i_to_j);
-
-			%fprintf("transition times for %d to %d:\n",regions(i),regions(j));
-			%fprintf("%d ",i_to_j);
-			%fprintf("\n");
-			%fprintf("average time from %d to %d: %f \n",regions(i),regions(j), mean(i_to_j));
-			%fprintf("\n");
-			
-			j_to_i = switch_times(regions(j),regions(i),paths,dt);
-			times(j,i).list = j_to_i;
-			times(j,i).list = j_to_i;
-			averages(j,i) = mean(j_to_i);
-			%fprintf("transition times for %d to %d \n",regions(j),regions(i));
-			%fprintf("%d ",j_to_i);
-			%fprintf("\n");
-			%fprintf("average time from %d to %d: %f \n",regions(j),regions(i), mean(j_to_i));
-			%fprintf("\n");
-		end
+		i_to_j =switch_times(i,j,paths,dt);
+		times(i,j).list = i_to_j;
+		averages(i,j) = mean(i_to_j);
+		%fprintf("transition times for %d to %d:\n",regions(i),regions(j));
+		%fprintf("%d ",i_to_j);
+		%fprintf("\n");
+		%fprintf("average time from %d to %d: %f \n",regions(i),regions(j), mean(i_to_j));
+		%fprintf("\n");
+		
+		j_to_i = switch_times(j,i,paths,dt);
+		times(j,i).list = j_to_i;
+		averages(j,i) = mean(j_to_i);
+		%fprintf("transition times for %d to %d \n",regions(j),regions(i));
+		%fprintf("%d ",j_to_i);
+		%fprintf("\n");
+		%fprintf("average time from %d to %d: %f \n",regions(j),regions(i), mean(j_to_i));
+		%fprintf("\n");
 	end
 end
 end
@@ -47,7 +43,6 @@ function times = switch_times(a,b,paths,dt)
 %		  	  paths
 %		  times - row vector of all transition times between region index i
 %		  		  and region index j in paths         
-
 	i = 1;
 	j = 1;
 	times = [];

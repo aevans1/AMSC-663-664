@@ -1,4 +1,4 @@
-function [path_end,regions_visited] = simulator(Xzero,m,T,f,dt,regions,dist,plot_sim,plot_points)
+function [path_end,regions_visited,X] = simulator(Xzero,m,T,f,dt,regions,dist,plot_sim,plot_points)
 %Simulator for linear SDE, using Euler-Maruyama method
 %SDE is of form dx = f(x) dt + dW, X(0) = Xzero
 

@@ -133,9 +133,15 @@ for n = 1:N
     %TESTING: keeping track of original centers of each chart, i.e
     %images of net points, THEN centering
     embed_L(n).center = local_L(:,1);
-    embed_L(n).L = embed_L(n).L - embed_L(n).center;
-    embed_X(n).X = local_X - embed_L(n).center;
     
+	
+	%TESTING: for NO_LMDS, don't shift by means
+	if no_LMDS
+		embed_X(n).X = local_X;
+	else
+		embed_L(n).L = embed_L(n).L - embed_L(n).center;
+    	embed_X(n).X = local_X - embed_L(n).center;
+   	end 
     %TESTING: redundant, but tracking these in the simulator struct as
     %well
     centers(:,n) = embed_L(n).center;
@@ -166,7 +172,6 @@ for n = 1:N
     %fprintf("TESTING: max distance from projected L to projected net point n:	%f, index %d\n",M,I);
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end
-
 new_Sim.T = T;
 new_Sim.B = B;
 new_Sim.C = C;
@@ -240,8 +245,8 @@ if no_LMDS
     %TESTING: setting drift from original problem
 
     %TODO: line here selecting based off of example
-    B = example_1_grad(embed_L(n).center);
-    %B = example_3_grad(embed_L(n).center);
+    %B = example_1_grad(embed_L(n).center);
+    B = example_3_grad(embed_L(n).center);
     
     %TESTING: setting diffusion from identity
     %option for true diffusion #1:

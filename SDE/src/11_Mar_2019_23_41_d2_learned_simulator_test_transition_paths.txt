@@ -1,0 +1,18 @@
+example: 3
+
+delta=0.200000
+m=5
+t_0=0.040000
+dt(ATLAS)=0.005000
+dt(original)=0.005000
+p=1
+T=1000.000000
+
+Parameters from simulator testing: 
+regions = 0
+regions = 0
+regions = 1.500000e+00
+regions = 0
+regions = 8.000000e-01
+regions = 1.050000e+00
+dist=0.250000

@@ -62,7 +62,7 @@ function [net,neighbors] = delta_net(init,delta,rho,is_random)
 		num_nbr = 0;
 		for m = 1:N
 			if rho(net(:,n),net(:,m))<2*delta && m ~= n
-				list(end+1) = m;
+				list = [list; m];
 			end
 		end
 		neighbors(n).nbr = list;
@@ -70,8 +70,6 @@ function [net,neighbors] = delta_net(init,delta,rho,is_random)
 		%fprintf("neighbors for net point %d of %d finished \n",n,N);
 	
 	end
-	
-
 		%TODO: figure out whether to add in this covering check or not	
 		%if num_nbr == 1:
 		%	if is_random:	

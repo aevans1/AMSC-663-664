@@ -161,7 +161,7 @@ for m = 1:num_locations
 	X_collection(:,1 + (m-1)*p: m*p) = X_delta;	
 
 	%%%Collect transition data between regions of interest
-	[X_switch_times] = transition_data(regions,X_regions_visited,dt);
+	[X_switch_times] = transition_data(regions,X_regions_visited,dt_original);
 	for i = 1:length(regions)
 		for j = i + 1: length(regions)
 			if j~=i
