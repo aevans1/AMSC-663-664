@@ -34,7 +34,7 @@ function [embed_L,embed_Z] = LMDS(L,Z,rho,d)
 
 	for i = 1:p
 	%compute distance vector for z against landmarks, project onto embedded
-	%...Landmark vectors
+	%Landmark vectors
 		for j = 1:m
 			dist_z(j,1) = rho(Z(:,i),L(:,j))^2; 
 		end

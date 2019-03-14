@@ -62,9 +62,10 @@ mu(N,N).mu = {}; %mu is the collection of average landmark for each chart
 %embed_X = zeros(d,N,p);
 %Phi = zeros(d,N);
 %T = zeros(d,d,N,N);
-%C = zeros(d,N,N);
+%temp_C = zeros(d,N,N);
 %mu = zeros(d,N,N);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 %%%Create landmarks
 A = zeros(D,m+1,N); %landmark set
 for n = 1:N
@@ -131,29 +132,23 @@ for n = 1:N
 	
 	%TESTING: for LMDS_debug, do not perform LMDS	
 	if LMDS_debug
-        fprintf("TEMPORARY: no LMDS\n");
+    fprintf("TEMPORARY: no LMDS\n");
         local_L = L(n).L;
         local_X = X(:,:,n);
         local_Phi = 1;
-    else
-        [local_L,local_X,local_Phi] = create_chart(X(:,:,n),L(n).L,rho,d,D);
-    end
-    
-    embed_L(n).L = local_L;
-    embed_X(n).X = local_X;
-    Phi(n).Phi = local_Phi;
    
-    %TESTING: keeping track of original centers of each chart, i.e
+	else
+		[local_L,local_X,local_Phi] = create_chart(X(:,:,n),L(n).L,rho,d,D);
+	end
+	%TESTING: keeping track of original centers of each chart, i.e
     %images of net points, THEN centering
 	centers(:,n) = local_L(:,1);
-
-	%TESTING: for LMDS_debug, don't shift by means
-	if ~LMDS_debug
-		embed_L(n).L = embed_L(n).L - centers(:,n);
-    	embed_X(n).X = local_X - centers(:,n);
-   	end 
-	
-        
+   
+	%%%translate all charts to be centered around embedded net point n
+    embed_L(n).L = local_L - centers(:,n);
+    embed_X(n).X = local_X - centers(:,n);
+    Phi(n).Phi = local_Phi;
+	       
     %%%Step 2: constructing local SDE
     [T,C,B(:,n),Sigma(:,:,n),mu] = construct_local_SDE(n,neighbors,embed_L,embed_X,centers,p,t_0,m,d,T,C,mu,LMDS_debug);
     
@@ -202,8 +197,14 @@ save('current_construction');
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [local_L,local_X,Phi] = create_chart(X,L,rho,d,D)
-%TODO:comments
-
+%inputs:	X - simulated points around net point n, D x p array
+%			L - landmarks for net point n, D x num_nbr n array
+%			rho - given distance function
+%			d - intrinsic dimension of space
+%			D - ambient dimension of space
+%outputs: local_L - LMDS applied to L, d x num_nbr array
+%		  local_X - LMDS applied to X, d x p array
+%	      Phi     - LMDS multiplier(+-1) for d = D = 1 case
 
 %tic
 [local_L,local_X] = LMDS(L,X,rho,d);
@@ -219,7 +220,32 @@ end
 end
 
 function [T,C,B,Sigma,mu] = construct_local_SDE(n,neighbors,embed_L,embed_X,centers,p,t_0,m,d,T,C,mu,LMDS_debug)
-%TODO: comments
+%inputs:    
+%		n - current net point, function constructs local_SDE for chart n
+%		neighbors - struct of neighbors for all net points
+%		embed_L - LMDS applied to L_n, d x p array
+%		embed_X - LMDS applied to X_n, d x num_nbr array
+%		centers - centers for each chart, i.ei LMDS applied to net points, d x N array
+%		p - num sample paths for each point in net
+%		t_0 - desired time of simulation for each call to S
+%		m - desired number of landmarks to generate for each net point
+%		d - intrinsic dimension of dynamics, problem specifics
+%		T - struct containing transition mappings between charts,
+%			updated each iteration of construct_local_SDE,
+%		    T(i,j).T is a d x d matrix which shifts coords from chart i to j
+%		C - struct containing local coordinates of neighboring charts,
+%			 updated each iteration of construct_local_SDE,
+%			 C(n,j).C is a d x 1 vector, j-th neighbor of net point n,
+%		     expressed in chart n coords(LMDS wrt n's landmarks)
+%		mu - struct containing mean landmarks of local neighboring charts,
+%		     updated each iteration of construct_local_SDE,
+%		    mu(n,j).C is a d x 1 vector, the average of chart j's landmarks
+%		    expressed in chart n coords
+%outputs: 
+%		T,C,mu: same as above, updated for net point n
+%		B: drift coordinate for n's SDE, d x1 vector
+%		Sigma: diffusion matrix for n's SDE, d x d matrix
+
 if ~exist('LMDS_debug') LMDS_debug = false; end
 
 %net_nbr contains global indices of neighbor net points to netpoint n
@@ -241,27 +267,9 @@ for i = 1:num_nbr
 end
 
 %%%Compute Diffusion coefficients, drift coefficients around y_n
-if LMDS_debug
-    fprintf("TEMPORARY: drift obtained from potential, diffusion is Identity \n");
-    %TESTING: setting drift from original problem
+B = (1/ (p*t_0) )*sum(local_X,2);%drift for y_n
+Sigma = sqrt(1/t_0)*sqrtm(cov((local_X).')); %diffusion for y_n
 
-    %TODO: line here selecting based off of example
-    %B = example_1_grad(centers(:,n));
-    %B = example_3_grad(centers(:,n))
-   
-	%Testing: comparing with ATLAS drift
-	B = (1/ (p*t_0) )*sum(local_X - local_L(:,1),2);%drift for y_n
-
-    %TESTING: setting diffusion from identity
-    %option for true diffusion #1:
-    Sigma = sqrt(1/t_0)*sqrtm(cov(local_X.')) %diffusion for y_n
-	%Sigma = eye(d);
-	
-else
-    B = (1/ (p*t_0) )*sum(local_X,2) %drift for y_n
-
-    Sigma = sqrt(1/t_0)*sqrtm(cov(local_X.')) %diffusion for y_n
-end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %TESTING: index checks
 %     fprintf("neighbors of net(:,%d): \n", n);
@@ -294,17 +302,18 @@ for i = 1:num_nbr
 		L_jn(:,1:m+1) = local_nbr_L(:,(ind-1)*(m+1) + 1: ind*(m+1)); %A_n  wrt nbr j embedding
         L_jn(:,m+2:2*m+2) = local_nbr_L(:,1:m+1); %A_j wrt nbr j embedding
       	mu(j,n).mu = mean(L_jn,2);
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        
+		%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %TESTING: for test case with no LMDS, L_jn should equal L_nj
-        if LMDS_debug
-			if ~all(L_nj  == L_jn)
-            	fprintf("landmark pairs not equal!\n");
-            	fprintf("L_nj pairs are : \n");
-				L_nj 
-				fprintf("L_jn pairs are : \n");
-				L_jn 
-			end
-		end
+        %if LMDS_debug
+		%	if ~all(L_nj  == L_jn)
+        %    	fprintf("landmark pairs not equal!\n");
+        %    	fprintf("L_nj pairs are : \n");
+		%		L_nj 
+		%		fprintf("L_jn pairs are : \n");
+		%		L_jn 
+		%	end
+		%end
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         
 		%%%Compute transition mapping T_nj between the two charts

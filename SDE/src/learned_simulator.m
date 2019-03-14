@@ -115,44 +115,41 @@ net_nbr = neighbors(i).nbr;
 num_nbr = length(net_nbr);
 
 %TESTING: not shifting by centers for no_lmd
-sqdist = abs(x - centers(:,net_nbr)).^2;
-[~,min_nbr] = min(sum(sqdist,1));
-j = net_nbr(min_nbr);
-new_chart_center = centers(:,j);
+%sqdist = abs(x + centers(:,i) - centers(:,net_nbr)).^2;
+%[~,min_nbr] = min(sum(sqdist,1));
+%j = net_nbr(min_nbr);
+%new_chart_center = centers(:,j);
 
 %%%%Code for nearest neighbor with LMDS
-%distances = [];
-%for n = 1:num_nbr
-%    j = net_nbr(n); 
-%	distances(n) = norm(x - C(i,j).C);
-%end
-%[~,min_dist] = min(distances);
-%j = net_nbr(min_dist);
+distances = [];
+for n = 1:num_nbr
+    j = net_nbr(n); 
+	distances(n) = norm(x - C(i,j).C);
+end
+[~,min_dist] = min(distances);
+j = net_nbr(min_dist);
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%TESTING: for d = D = 1, no LMDS, with no chart shifting...
-%don't need to shift chart coords
-%if j ~= i
-	%set new chart to i
+if j ~= i
+	%TESTING: for LMDS_debug, don't use transition mapts
+	%	%set new chart to i
     %x = (T(i,j).T)*(x - mu(i,j).mu) + mu(j,i).mu;
-   
-    %TESTING: for d = D = 1 case and no LMDS, changing charts is shifting
+    
+	%for d = D = 1 case and no LMDS, changing charts is shifting
     %centers
-    %x = x + centers(:,i) - centers(:,j); 
-%end
+    x = x + centers(:,i) - centers(:,j); 
+end
 
 %%%Forward Euler step
 eta = randn(d,1);
 x = x + B(:,j)*dt + Sigma(:,:,j)*eta*sqrt(dt);
 
 %%%prevent escape from local chart by applying wall function
-%TESTING: no_LMDS means need to shift by chart center
-%if norm(x) > (3/2)*delta
-v = x - new_chart_center;
-if norm(v) > (3/2)*delta
-	v = (1/norm(v))*v*(2*delta - (1/2)*delta*exp(3 - (2/delta)*norm(v)));
-	x = v + new_chart_center;
+if norm(x) > (3/2)*delta
+	x = (1/norm(x))*x*(2*delta - (1/2)*delta*exp(3 - (2/delta)*norm(x)));
 end
+
+
+
 end
 
 

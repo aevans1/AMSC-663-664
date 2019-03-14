@@ -34,7 +34,7 @@ X_switch_times = repmat(struct('list',[]),length(regions),length(regions));
 %%%Initial simulation point
 Xzero = net(:,1);
 
-%%%Assign net points to closests region, if within presciribed distance
+%%%Assign net points to closest region, if within presciribed distance
 T_net = 100;
 region_net = zeros(size(net,2),1);
 for n = 1 : size(net,2)
@@ -75,15 +75,17 @@ sqdist = (Xzero - net).^2;
 
 %%%%%%%%%%%%%%%%%%%%%%%%
 %TESTING: comment out line below if no LMDS
-%% 	Embed initial condition for original simulator so it can berun in reduced
-%% 	simulator
+%%% 	Embed initial condition for original simulator so it can berun in reduced
+%%%	 	simulator
 %[local_L,Yzero] = LMDS(L(init_chart).L,Xzero,rho,d);
 %
-%% 	Center projected point around the chart center
-%Yzero = Yzero - local_L(:,1);
-
 %for no LMDS, use orginal Xzero
 Yzero = Xzero;
+
+
+%%% 	Center projected point around the chart center
+Yzero = Yzero - centers(:,init_chart);
+
 %%%%%%%%%%%%%%%%%%%%%%%%
 [~,~,Y,chart] =learned_simulator(Yzero,p,dt,T,new_S,neighbors,d,delta,net,init_chart);
 
