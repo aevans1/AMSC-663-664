@@ -15,19 +15,14 @@ function [new_Sim,neighbors,net] = construction(S,init,delta,rho,m,p,t_0,d,load_
 %         net - columns are data points, all distances >= delta apart
 %  		  neighbors - struct array, each net point index has a struct with key value
 %		 'nbr' that stores the indices of close by net points
-
-
-%if true for d = D, no LMDS computed and drift diffusion are from the
-%original problem
-no_LMDS = true;
-
-
-%%%Create delta_net from initial points, create landmarks for delta_net
-%	TODO: better way to do this? Loading up structs if saved
+%Flags and extra parameters
+LMDS_debug = true;  %(for debugging) if true for d = D, no LMDS computed
+				 %and drift diffusionare from the %original problem
 if ~exist('load_net','var')
     load_net = false;
 end
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%Create delta_net from initial points, create landmarks for delta_net
 if load_net == false
     [net,neighbors] = delta_net(init,delta,rho);
 else
@@ -36,11 +31,10 @@ else
     fprintf('net is...\n');
     net
 end
-
 %fprintf("delta net is.... \n");
 %net
 
-D = size(net,1); %assuming each column of delta_net is a data_point
+D = size(net,1); %each column of delta_net is a data_point
 N = size(net,2); %number of points in delta_net
 
 %%%Initialize arrays, and create landmarks from the net
@@ -54,6 +48,23 @@ T(N,N).T = {}; %T is the collection of transition maps from chart to chart
 C(N,N).C = {}; %C is the collection of chart centers for each chart
 mu(N,N).mu = {}; %mu is the collection of average landmark for each chart
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%TODO: structs->arrays, as below
+%TESTING: redoing all the above WITHOUT structs
+%find degrees of each point
+%degrees = zeros(1,N);
+%for n = 1:N
+%	degrees(n) = length(neighbors(n).nbr);
+%end
+%max_deg = max(degrees);
+%L = zeros(d,N,max_deg);
+%embed_L = zeros(d,N,max_deg);
+%embed_X = zeros(d,N,p);
+%Phi = zeros(d,N);
+%T = zeros(d,d,N,N);
+%C = zeros(d,N,N);
+%mu = zeros(d,N,N);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%Create landmarks
 A = zeros(D,m+1,N); %landmark set
 for n = 1:N
@@ -78,7 +89,8 @@ for n = 1:N
     %store points from neighboring landmarks as collection of columns
     %associated to y_n
     L(n).L = reshape(A(:,:,net_nbr),D,(m+1)*num_nbr);
-    
+   
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %TESTING: index check
     fprintf("TESTING: index check for landmarks \n");
     temp = L(n).L;
@@ -88,12 +100,13 @@ for n = 1:N
             fprintf("index error at landmark collection \n");
         end
     end
-    
+   	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %TESTING: distances to net points from trajectories
     %according to ATLAS paper, t_0 should be chosen so that
     %E[X - net(:,n)] ~ delta, likewise for landmarks L
-    %if D == 1
+   	% 
+	%if D == 1
     %	dist_to_net =  mean(abs(X(:,:,n) - net(:,n)),2);
     %else
     %	dist_to_net =  mean(vecnorm(X(:,:,n) - net(:,n)),2);
@@ -113,11 +126,11 @@ for n = 1:N
     %fprintf("TESTING: avg distance from landmarks L to net point n:	%f \n",dist_to_net);
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
-    
-    
     %%%Step 1:Create chart for each net point
-    
-    if no_LMDS
+   	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+	
+	%TESTING: for LMDS_debug, do not perform LMDS	
+	if LMDS_debug
         fprintf("TEMPORARY: no LMDS\n");
         local_L = L(n).L;
         local_X = X(:,:,n);
@@ -129,25 +142,20 @@ for n = 1:N
     embed_L(n).L = local_L;
     embed_X(n).X = local_X;
     Phi(n).Phi = local_Phi;
-    
+   
     %TESTING: keeping track of original centers of each chart, i.e
     %images of net points, THEN centering
-    embed_L(n).center = local_L(:,1);
-    
-	
-	%TESTING: for NO_LMDS, don't shift by means
-	if no_LMDS
-		embed_X(n).X = local_X;
-	else
-		embed_L(n).L = embed_L(n).L - embed_L(n).center;
-    	embed_X(n).X = local_X - embed_L(n).center;
+	centers(:,n) = local_L(:,1);
+
+	%TESTING: for LMDS_debug, don't shift by means
+	if ~LMDS_debug
+		embed_L(n).L = embed_L(n).L - centers(:,n);
+    	embed_X(n).X = local_X - centers(:,n);
    	end 
-    %TESTING: redundant, but tracking these in the simulator struct as
-    %well
-    centers(:,n) = embed_L(n).center;
-    
+	
+        
     %%%Step 2: constructing local SDE
-    [T,C,B(:,n),Sigma(:,:,n),mu] = construct_local_SDE(n,neighbors,embed_L,embed_X,p,t_0,m,d,T,C,mu,no_LMDS);
+    [T,C,B(:,n),Sigma(:,:,n),mu] = construct_local_SDE(n,neighbors,embed_L,embed_X,centers,p,t_0,m,d,T,C,mu,LMDS_debug);
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %TESTING: distances to net points from trajectories
@@ -172,6 +180,7 @@ for n = 1:N
     %fprintf("TESTING: max distance from projected L to projected net point n:	%f, index %d\n",M,I);
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end
+
 new_Sim.T = T;
 new_Sim.B = B;
 new_Sim.C = C;
@@ -195,6 +204,7 @@ end
 function [local_L,local_X,Phi] = create_chart(X,L,rho,d,D)
 %TODO:comments
 
+
 %tic
 [local_L,local_X] = LMDS(L,X,rho,d);
 %LMDS_time = toc
@@ -202,24 +212,15 @@ function [local_L,local_X,Phi] = create_chart(X,L,rho,d,D)
 Phi = [];
 if d ==1 && D ==1
     %%%%Note:D = d = 1 case only!
-    %Here Phi is whatever was multiplied by X's to get embedding
+    %Here Phi is whatever was multiplied by X's to get 'embedding'
     temp_X = X - mean(L,2);
     Phi = local_X(:,1)/temp_X(:,1);
 end
-%%%%%
-
-%TODO: likely remove this
-%%%Centering all data for chart around chart center
-% 		center = local_L(:,1);
-% 		local_L = local_L - center;
-% 		local_X = local_X - center;
-
 end
 
-function [T,C,B,Sigma,mu] = construct_local_SDE(n,neighbors,embed_L,embed_X,p,t_0,m,d,T,C,mu,no_LMDS)
+function [T,C,B,Sigma,mu] = construct_local_SDE(n,neighbors,embed_L,embed_X,centers,p,t_0,m,d,T,C,mu,LMDS_debug)
 %TODO: comments
-if ~exist('no_LMDS') no_LMDS = false; end
-
+if ~exist('LMDS_debug') LMDS_debug = false; end
 
 %net_nbr contains global indices of neighbor net points to netpoint n
 net_nbr = neighbors(n).nbr;
@@ -240,82 +241,80 @@ for i = 1:num_nbr
 end
 
 %%%Compute Diffusion coefficients, drift coefficients around y_n
-if no_LMDS
+if LMDS_debug
     fprintf("TEMPORARY: drift obtained from potential, diffusion is Identity \n");
     %TESTING: setting drift from original problem
 
     %TODO: line here selecting based off of example
-    %B = example_1_grad(embed_L(n).center);
-    B = example_3_grad(embed_L(n).center);
-    
+    %B = example_1_grad(centers(:,n));
+    %B = example_3_grad(centers(:,n))
+   
+	%Testing: comparing with ATLAS drift
+	B = (1/ (p*t_0) )*sum(local_X - local_L(:,1),2);%drift for y_n
+
     %TESTING: setting diffusion from identity
     %option for true diffusion #1:
-    Sigma = eye(d);
+    Sigma = sqrt(1/t_0)*sqrtm(cov(local_X.')) %diffusion for y_n
+	%Sigma = eye(d);
+	
 else
-    B = (1/ (p*t_0) )*sum(local_X,2); %drift for y_n
-    Sigma = sqrt(1/t_0)*sqrtm(cov(local_X.')); %diffusion for y_n
-end
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
+    B = (1/ (p*t_0) )*sum(local_X,2) %drift for y_n
 
+    Sigma = sqrt(1/t_0)*sqrtm(cov(local_X.')) %diffusion for y_n
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %TESTING: index checks
 %     fprintf("neighbors of net(:,%d): \n", n);
 %     net_nbr
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%Compute switching maps
-%NOTE: net_nbr = [n idx1 idx 2 ...], idx1 < idx 2 < ...
+%NOTE: indexing to find nbr is based on that 
+        %net_nbr = [n nbr1 nbr2 ] 
+        %local_L = [y_n landmarks| y_nbr1 landmarks |y_nbr2 ...]
 for i = 1:num_nbr
     if net_nbr(i) < n
         j = net_nbr(i);	%global index of neighbor of n
-        %TESTING:index checks
+		%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%	
+		%TESTING:index checks
         %fprintf("neighbor of net(:,%d), global index: %d, local_index: %d \n",n,j,i);
-                
-        %L_j' in atlas paper
-        local_nbr_L = embed_L(j).L; %embeddings wrt nbr of y_n
+    	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
         
-        %NOTE: indexing to find nbr is based on that 
-        %net_nbr = [n nbr1 nbr2 ] 
-        %[y_n landmarks| y_nbr1 landmarks ...]
-        
-        %NOTE: From paper: this is L_k,j
-        %embedded landmarks pair wrt y_n
-        L_nj(:,1:m+1) = local_L(:,1:m+1);  %y_k wrt y_k embedding
-        L_nj(:,m+2:2*m+2) = local_L(:, (i - 1)*(m+1) + 1: i*(m+1)); %nbr wrt y_k embedding
+		%%%Find embeddings of chart overlaps between chart for net point n and nbr net point j
+		%L_jn is Phi_n(A_n U A_j), the embedding of landmarks for net points n,j in chart n's coordinates
+		%L_jn is Phi_j(A_n U A_j), the embedding of landmarks for net points n,j in chart j's coordinates
+
+		L_nj(:,1:m+1) = local_L(:,1:m+1);  %A_n wrt y_n embedding
+        L_nj(:,m+2:2*m+2) = local_L(:, (i - 1)*(m+1) + 1: i*(m+1)); %A_j wrt y_n embedding
         mu(n,j).mu = mean(L_nj,2);
-        
-        %%%find y_n wrt nbr embedding
+       
+		local_nbr_L = embed_L(j).L; %embeddings wrt nbr of y_n
         nbr_switch_ind = neighbors(j).nbr;
         ind = find(nbr_switch_ind ==n);
-        
-        %From paper: this is L_j,k
-        %L_jn(:,1:m+1) = local_nbr_L(:,1:m+1);  %nbr i wrt nbr i embedding
-        %L_jn(:,m+2:2*m+2) = local_nbr_L(:,(ind-1)*(m+1) + 1: ind*(m+1)); %y_n  wrt nbr i embedding
-        
-        %TESTING: swapping around the L_jn to match L_nj
-        L_jn(:,1:m+1) = local_nbr_L(:,(ind-1)*(m+1) + 1: ind*(m+1)); %y_n  wrt nbr i embedding
-        L_jn(:,m+2:2*m+2) = local_nbr_L(:,1:m+1); %nbr i wrt nbr i embedding
-        
+				
+		L_jn(:,1:m+1) = local_nbr_L(:,(ind-1)*(m+1) + 1: ind*(m+1)); %A_n  wrt nbr j embedding
+        L_jn(:,m+2:2*m+2) = local_nbr_L(:,1:m+1); %A_j wrt nbr j embedding
+      	mu(j,n).mu = mean(L_jn,2);
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %TESTING: for test case with no LMDS, L_jn should equal L_nj
-        %if ~all(sort(L_nj +embed_L(n).center) == sort(L_jn + embed_L(j).center))
-        if ~all(L_nj +embed_L(n).center == L_jn + embed_L(j).center)
-            fprintf("landmark pairs not equal!\n");
-            L_nj + embed_L(n).center
-            L_jn + embed_L(j).center
-        end
+        if LMDS_debug
+			if ~all(L_nj  == L_jn)
+            	fprintf("landmark pairs not equal!\n");
+            	fprintf("L_nj pairs are : \n");
+				L_nj 
+				fprintf("L_jn pairs are : \n");
+				L_jn 
+			end
+		end
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         
-        mu(j,n).mu = mean(L_jn,2);
-        
-        %T(n,j).T is transition map from chart n to chart j
-        %i.e, T(n,j).T*x changes x from chart n coords to chart j
-        %coords
+		%%%Compute transition mapping T_nj between the two charts
+        %T(n,j).T*x changes x from chart n coords to chart j coords
         T(n,j).T = (L_jn - mu(j,n).mu)*pinv(L_nj - mu(n,j).mu);
         T(j,n).T = (L_nj - mu(n,j).mu)*pinv(L_jn - mu(j,n).mu);
         
     %end transition map computing for neighbor
     end
 %end computation of transition maps
-
 end
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

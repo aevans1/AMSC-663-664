@@ -54,7 +54,7 @@ function [net,neighbors] = delta_net(init,delta,rho,is_random)
 	%%%Create struct of neighbors for delta-net: two net points y_n,y_m are connected if
 	%rho(y_n,y_m) < 2delta
 	N = size(net,2);
-	neighbors = {};
+	nbr_temp = {};
 	for n = 1:N
 		list =[n]; %first neighbor of y_n will be y_n itself
 

@@ -162,7 +162,6 @@ switch setting
 	end
 hold off;
 
-
 %TODO: figure out how to do this better
 %%%Print relevant data to text file
 fprintf(fileID,'example: %d\n',example);
@@ -182,4 +181,3 @@ fprintf(fileID,'dist=%f\n',dist);
 
 save(filename);
 fclose(fileID);
-
