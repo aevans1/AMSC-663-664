@@ -41,8 +41,8 @@ switch example
     
 	%Set up parameters for original simulator
 	f = @(x) example_1_grad(x);
-	dt_sim = 0.005; %timestep for original simulator
-	S = @(Xzero,m,T) simulator(Xzero,m,T,f,dt_sim);
+	dt_original = 0.005; %timestep for original simulator
+	S = @(Xzero,m,T) simulator(Xzero,m,T,f,dt_original);
 
 	case 2
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -61,8 +61,8 @@ switch example
 	
 	%Set up parameters for original simulator
 	f = @(x) example_2_grad(x);
-	dt_sim = 0.00005; %timestep for original simulator
-	S = @(Xzero,m,T) simulator(Xzero,m,T,f,dt_sim);
+	dt_original = 0.00005; %timestep for original simulator
+	S = @(Xzero,m,T) simulator(Xzero,m,T,f,dt_original);
 
 	%As in the paper, run initial point set through simulator for time t= 0.01
 	for i = 1:length(init)
@@ -73,18 +73,9 @@ switch example
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	%Example 3: Smooth 2-D Potential from ATLAS paper, ex. 5.3.1
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	d = 2;	
+	d = 2;
 	rho = @(x,y) norm(x - y);
 	delta = 0.2; 
-	m = 10;
-	p = 10000;
-	t0 = delta^2;
-	dt = t0/5;
-
-	%Set up parameters for original simulator
-	f = @(x) example_3_grad(x);
-	dt_sim = 0.005; %timestep for original simulator
-    S = @(Xzero,m,T) simulator(Xzero,m,T,f,dt_sim);
 	
 	%initial  point set for generating delta-net, [-1,2.5] x [-1,2] grid
 	%each col of init is (x,y) vector
@@ -101,38 +92,33 @@ switch example
 	threshold = [Z < 10; Z < 10];
 	init = threshold.*temp_init;
 	init = init(:,any(init,1)); %removing zero columns
-	    
-	delta_net(init,delta,rho);
-	params.net_info = load('current_delta_net.mat');	
-   
-	params.d = d;	
-	params.rho = rho;
-	params.delta = delta;
-	params.m = m;
-	params.p = p;
-	params.t0 = t0;
-	params.dt = dt;
-	params.S = S;
-	params.dt_sim = dt_sim;
-	params.f = f;
+	m = 5;
+	p = 10000;
+	t_0 = delta^2;
+	
+	dt = t_0/5;
 
-    otherwise
-	fprintf("enter a number (1-3) \n");
-	return;
+	%Set up parameters for original simulator
+	f = @(x) example_3_grad(x);
+	dt_original = 0.005; %timestep for original simulator
+	S = @(Xzero,m,T) simulator(Xzero,m,T,f,dt_original);
+	
+	otherwise
+		fprintf("enter a number (1-3) \n");
+		return;
 end
 
 fprintf("Running atlas for example %d ... \n ", example);
 
+[new_S,neighbors,net] = construction(S,init,delta,rho,m,p,t_0,d,load_net);
 
 if example == 1 || example == 2
 	dim1potential_test(example,new_S,net);
 end
 
-save('current_driver.mat','params');
-construction();
-
-%filename =[datestr(now, 'dd_mmm_yyyy_HH_MM'),'_','d',num2str(d),'_','atlas_driver'];
-%save(filename);
+filename =[datestr(now, 'dd_mmm_yyyy_HH_MM'),'_','d',num2str(d),'_','atlas_driver'];
+save(filename);
+save("current_atlas_driver");
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%
@@ -162,6 +148,22 @@ end
 %%%%%%%%
 %Example 3: 2d Smooth Potential
 %%%%%%%%
+% function out = example_3_grad(x)
+% 	%-grad(example_3(x))
+% 	%input: x is a vector in R^2
+% 	%output: out is a vector in R^2
+% 	
+% 	c = [1/5;1/5;1/6];
+% 	p_1 = [0;0];
+% 	p_2 = [1.5;0];
+% 	p_3 = [0.8;1.05];
+% 	out =  -2*( ( (x - p_1)/c(1))*exp( (1/c(1))*(-norm(x - p_1)^2)) + ...
+% 		( (x - p_2)/c(2))*exp( (1/c(2))*(-norm(x - p_2)^2)) +  ...
+% 		((x-p_3)/c(3))*exp( (1/c(3))*(-norm(x - p_3)^2)))/...
+% 		(exp( (1/c(1))*(-norm(x - p_1)^2)) + ...
+% 		exp( (1/c(2))*(-norm(x - p_2)^2)) + ...
+% 		exp( (1/c(3))*(-norm(x - p_3)^2)));
+% end
 function U = example_3(x)
 % 2D potential from Crosskey&Maggioni
 p1 = [0;0];
@@ -182,6 +184,22 @@ function dU = example_3_grad(x)
 % 	%-grad(example_3(x))
 % 	%input: x is a vector in R^2
 % 	%output: out is a vector in R^2
+% 	
+% 	c = [1/5;1/5;1/6];
+% 	p_1 = [0;0];
+% 	p_2 = [1.5;0];
+% 	p_3 = [0.8;1.05];
+% 	out =  -2*( ( (x - p_1)/c(1))*exp( (1/c(1))*(-norm(x - p_1)^2)) + ...
+% 		( (x - p_2)/c(2))*exp( (1/c(2))*(-norm(x - p_2)^2)) +  ...
+% 		((x-p_3)/c(3))*exp( (1/c(3))*(-norm(x - p_3)^2)))/...
+% 		(exp( (1/c(1))*(-norm(x - p_1)^2)) + ...
+% 		exp( (1/c(2))*(-norm(x - p_2)^2)) + ...
+% 		exp( (1/c(3))*(-norm(x - p_3)^2)));
+% end
+% 
+% 
+%function dU = CMgrad2D(x)
+% 2D potential and its gradient from Crosskey&Maggioni
 p1 = [0;0];
 p2 = [1.5;0];
 p3 = [0.8;1.05];
@@ -201,6 +219,10 @@ for i = 1 : 3
 end
 dU = (1/s)*(sum(grad,2));
 end
+
+
+
+
 
 function distance = dist(x,y)
 %%%Distance function for euclidean space
@@ -283,7 +305,7 @@ function is_close = close(x,net,delta,rho)
 
 	%Check is x is far away from net
 	while (~is_close && k <= N)
-		if rho(x,net(:,k)) > 0 && rho(x,net(:,k)) < 2*delta 
+		if rho(x,net(:,k)) > 0 & rho(x,net(:,k)) < 2*delta 
 			is_close = true; %break!
 		else
 			k = k+1;

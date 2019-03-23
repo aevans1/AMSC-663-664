@@ -90,6 +90,7 @@ for k = 1 : Nnet
         % find points for landmarks within radius 2*delta of net(:,k)
         j = nei(k,neib);
         A1 = squeeze(A(:,:,j));
+        
         Lk = [Lk,A1]; % Lk = union_{i ~ k} A_i
     end
     % Lk is the union of k-th delta-net point together with its landmarks 
@@ -98,14 +99,13 @@ for k = 1 : Nnet
     [Lknew,xnew] = LMDS(Lk,x,d); % d is the desired output dimension
     % find Phi_k(net(:,j)) where Phi_k is the embedding map of the k-th
     % chart
-%      nneib = size(index,1);
+     nneib = size(index,1);
     % shift coordinates so that c(:,k,k) = 0
     shift = Lknew(:,1); % place the image of k-th delta-net point into the origin
     Lknew = Lknew - shift*ones(1,size(Lknew,2));
     xnew = xnew - shift*ones(1,size(xnew,2));
-    for neib = 1 : deg(k)
-%         c(:,k,index(neib,1)) = Lknew(:,index(neib,2)); 
-        c(:,k,nei(k,neib)) = Lknew(:,m1*neib + 1); 
+    for neib = 1 : nneib
+        c(:,k,index(neib,1)) = Lknew(:,index(neib,2)); 
     end
     c(:,k,k) = zeros(d,1);
 %     figure; hold on
@@ -122,7 +122,7 @@ for k = 1 : Nnet
     [evec,eval] = eig(aux);
     sig(:,:,k) = evec*sqrt(eval)*evec';
     % compute switching maps
-    for neib = 1 : deg(k)
+    for neib = 1 : nneib
         j = nei(k,neib);
         if j < k
             i = m1*neib + 1;

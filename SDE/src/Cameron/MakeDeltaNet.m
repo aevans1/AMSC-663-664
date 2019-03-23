@@ -7,7 +7,6 @@ ymax = 2;
 x = linspace(xmin,xmax,N);
 y = linspace(ymin,ymax,N);
 [xg,yg] = meshgrid(x,y); 
-
 for i = 1 : N
     for j = 1 : N
         U(i,j) = pot([xg(i,j);yg(i,j)]);
@@ -29,13 +28,12 @@ for i = 1 : nsteps
     x = x + grad(x)*dt + 10*dw(:,i);
     d = sum((net - x*ones(1,nnet)).^2,1);
     if min(d) > d2 & pot(x) < 10
-	nnet = nnet + 1;
+        nnet = nnet + 1;
         net(:,nnet) = x;
         plot(x(1),x(2),'o','color','k');
         drawnow;
     end
 end
-nnet
 %% make the delta-net into a network and remove isolated vertices
 del2 = 2*delta;
 E = []; % edges of the delta-net
@@ -48,7 +46,6 @@ for i = 1 : nnet - 1
     end
 end
 
-E
 % degrees and maximal degree
 n0 = 0;
 Nnet = size(net,2);
@@ -100,6 +97,9 @@ for k = 1 : Nnet
     end
 end
 
+
+
+
 fsize = 20;
 colorbar
 daspect([1,1,1]);
@@ -109,7 +109,6 @@ set(gca,'Fontsize',fsize);
 
 save('delta_net_CM2D.mat','net','E','deg','maxdeg','nei','xg','yg','U');
 end
-
 
 
 

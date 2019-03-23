@@ -1,4 +1,5 @@
-function learn_atlas()
+function learn_atlas_test()
+%% CREATED TO DEBUG learn_atlas.m
 %%
 % Crosskey and Maggioni (2017) ATLAS, SIAM MMS code from Fig. 4, page 119
 % 2D example with a 3-well smooth potential, page 142
@@ -82,14 +83,18 @@ T = zeros(d,d,Nnet,Nnet);
 mu = zeros(d,Nnet,Nnet);
 b = zeros(d,Nnet);
 sig = zeros(d,d,Nnet);
-for k = 1 : Nnet
+for k = 1 : 7 %Nnet
     fprintf('k = %d\n',k);
     x = simulator(net(:,k),p,t0,fun);
     Lk = squeeze(A(:,:,k));
+    index = [];
+    % index are the indices of net(:,j) in Lk
     for neib = 1 : deg(k)
         % find points for landmarks within radius 2*delta of net(:,k)
         j = nei(k,neib);
+        fprintf('j = %d\n',j)
         A1 = squeeze(A(:,:,j));
+        index = [index;[j,size(Lk,2) + 1]];
         Lk = [Lk,A1]; % Lk = union_{i ~ k} A_i
     end
     % Lk is the union of k-th delta-net point together with its landmarks 
@@ -98,31 +103,47 @@ for k = 1 : Nnet
     [Lknew,xnew] = LMDS(Lk,x,d); % d is the desired output dimension
     % find Phi_k(net(:,j)) where Phi_k is the embedding map of the k-th
     % chart
-%      nneib = size(index,1);
+     nneib = size(index,1);
     % shift coordinates so that c(:,k,k) = 0
     shift = Lknew(:,1); % place the image of k-th delta-net point into the origin
     Lknew = Lknew - shift*ones(1,size(Lknew,2));
     xnew = xnew - shift*ones(1,size(xnew,2));
-    for neib = 1 : deg(k)
-%         c(:,k,index(neib,1)) = Lknew(:,index(neib,2)); 
-        c(:,k,nei(k,neib)) = Lknew(:,m1*neib + 1); 
+    for neib = 1 : nneib
+        c(:,k,index(neib,1)) = Lknew(:,index(neib,2)); 
     end
     c(:,k,k) = zeros(d,1);
 %     figure; hold on
 %     plot(x(1,:),x(2,:),'.','Markersize',20,'color',[0.5 0 0.5]);
 %     plot(Lk(1,:),Lk(2,:),'o','color','m');
-%     figure;
-%     hold on
-%     plot(xnew(1,:) + net(1,k),xnew(2,:) + net(2,k),'.','Markersize',20,'color',[0.5 0 0.5]);
-%     plot(Lknew(1,:) + net(1,k),Lknew(2,:) + net(2,k),'o','color','m');
+    if k == 1 | k == 7
+        if k == 1
+            col1 = 'b';
+            col2 = 'r';
+            j = 2;
+        else
+            col1 = 'r';
+            col2 = 'b';
+            j = 8;
+        end
+        figure;
+        grid;
+        hold on
+%         plot(Lknew(1,:),Lknew(2,:),'o','color','m');
+        plot(Lknew(1,1 : m1),Lknew(2,1 : m1),'.','color',col1,'Markersize',20);
+        plot(Lknew(1,1),Lknew(2,1),'.','color',col1,'Markersize',40);
+        plot(Lknew(1,(j - 1)*m1 + 1 : j*m1),Lknew(2,(j - 1)*m1 + 1 : j*m1),'.','color',col2,'Markersize',20);
+        plot(Lknew(1,(j - 1)*m1 + 1),Lknew(2,(j - 1)*m1 + 1),'.','color',col2,'Markersize',40);
+        title(sprintf('k = %d',k),'Fontsize',20);
+    end
     Lnew(:,1 : m1*(deg(k) + 1),k) = Lknew;
+    fprintf('k = %d, deg = %d, size of Lknew = [%d,%d]\n',k,deg(k),size(Lknew,1),size(Lknew,2));
     % find drift and diffusion
     b(:,k) = sum(xnew,2)/pt0;
     aux = cov(xnew')/t0;
     [evec,eval] = eig(aux);
     sig(:,:,k) = evec*sqrt(eval)*evec';
     % compute switching maps
-    for neib = 1 : deg(k)
+    for neib = 1 : nneib
         j = nei(k,neib);
         if j < k
             i = m1*neib + 1;
@@ -144,7 +165,7 @@ for k = 1 : Nnet
         end
     end
 end
-save('LearnedSimulator_CM2D.mat','delta','T','mu','c','b','sig');
+save('LearnedSimulator_CM2D.mat','delta','T','mu','c','b','sig','Lnew');
 end
 %% Moore-Penrose pseudoinverse
 function B = MPpseudo(A)

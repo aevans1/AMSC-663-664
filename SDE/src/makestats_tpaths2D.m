@@ -1,18 +1,20 @@
-function MakeStats4Atlas()
-dat = load('TswitchCM2D.mat');
-Tswitch = dat.Tswitch;
-% Tswitch is the list of switch times between wells
-% ch is the sequence of visited charts
-%% compare with the original simulator
-dat = load('OriginalTswitch.mat');
-Tsw0 = dat.Tswitch;
-%%
-Nwell = 3;
-fprintf('ATLAS:\n');
-Tbar = MeanSwitchTimes(Nwell,Tswitch);
-fprintf('Original\n');
-Tbar0 = MeanSwitchTimes(Nwell,Tsw0);
+function makestats_tpaths2D()
+%TODO: comments
 
+%%%read in switch times from ATLAS
+data = load('learned_tswitch.mat');
+learned_switches = data.learned_switches;
+
+%%% read in switch times from original simulator
+data = load('original_tswitch.mat');
+original_switches = data.original_switches;
+
+num_regions = 3;
+
+fprintf('ATLAS:\n');
+Tbar = MeanSwitchTimes(num_regions,learned_switches);
+fprintf('Original\n');
+Tbar0 = MeanSwitchTimes(num_regions,original_switches);
 
 figure(2); clf; hold on;
 bar([Tbar,Tbar0]);
@@ -22,8 +24,9 @@ set(gca,'Fontsize',20);
 ylabel('Mean transition time','Fontsize',20);
 end
 
-%% find mean switch times
 function Tbar = MeanSwitchTimes(Nwell,Tswitch)
+%TODO: comments
+
 T = zeros(Nwell); % mean switch times between wells
 for i = 1 : Nwell
     for j = 1 : Nwell
