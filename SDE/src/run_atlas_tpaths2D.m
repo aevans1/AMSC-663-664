@@ -86,7 +86,6 @@ init_L = L(:,1:(m+1)*(num_nbr + 1),init_chart);
 %%%Embed initial condition for original simulator,center,then run atlas simulator
 %fprintf("TESTING: using prof. cameron LMDS \n");
 [local_L,Yzero] = LMDS(init_L,Xzero,rho,d);
-%[local_L,Yzero] = cameron_LMDS(init_L,Xzero,d);
 Yzero = Yzero - local_L(:,1);
 
 fprintf("simulating atlas paths\n");

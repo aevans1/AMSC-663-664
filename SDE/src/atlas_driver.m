@@ -1,4 +1,4 @@
-function atlas_driver(example,load_net)
+function atlas_driver(example)
 %%%%Main file for setting ATLAS parameters
 
 %S - Simulator, deafult: 1d maggioni example, see simulator.m
@@ -17,9 +17,7 @@ seed = 1;
 fprintf("RNG seed: %d\n",seed);
 rng(seed);
 
-%Default example is 1, Default is to not load up delta_net
 if ~exist('example','var') example = 1; end
-if ~exist('load_net','var') load_net = false; end
 
 %Input example determines which system is used for ATLAS
 switch example
