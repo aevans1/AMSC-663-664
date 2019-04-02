@@ -137,7 +137,9 @@ end
 %Example 1: 1d smooth potential
 %%%%%%%%
 function out = example_1(x)
-    %example, 1d smooth potential
+%%
+%%example, 1d smooth potential%
+    
 	out = 16*x^2*(x-1)^2;
 end
 function out = example_1_grad(x)
