@@ -186,7 +186,8 @@ function [T,c,b,sigma,mu] = construct_local_SDE(n,net_info,embed_L,embed_X,p,t0,
 %			 c(:,i,j) is a d x 1 vector, isj-th neighbor of net point n,
 %		     expressed in chart n coords(LMDS wrt n's landmarks)
 %		b - d X 1 vector, drift coordinate for n's local SDE
-%		sigma - d x d array, diffusion coords for n's local SDE		
+%		sigma - d x d x N array, sigma(:,:,n) is d x d array, diffusion coords
+%		for n's local SDE, updated each iteration of construct_local_SDE		
 %		mu - d X N X N array containing mean landmarks of local neighboring charts,
 %		     updated each iteration of construct_local_SDE,
 %		    mu(:,i,j) is a d x 1 vector, the average of chart j's landmarks

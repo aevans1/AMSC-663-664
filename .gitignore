@@ -39,6 +39,14 @@ Thumbs.db
 #Lukes Addons #
 #####################
 *.mat
+*.tex
+*.synctex.gz
+*.aux
+*.bib
+*.fdb_latexmk
+*.bbl
+*.fls
+*.out
 /SDE/src/Cameron
 /SDE/src/genetic_switch
 /SDE/src/Archive
