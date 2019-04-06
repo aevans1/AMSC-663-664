@@ -34,7 +34,7 @@ transition averages from run_atlas_2paths2d.m
 
 ### Parameters
 
-####Problem-Specific inputs
+#### Problem-Specific inputs
 
 The user should have an input SDE of form dx = f(x) dt + dW in R^D with a known timestep and metric 'rho' for the ambient space. In particular, the user must input:
 
