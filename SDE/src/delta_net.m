@@ -45,15 +45,22 @@ function [net_info] = delta_net(init,delta,rho,is_random)
 
 	%%%Create network from delta-net:
 	%%%two net points y_i,y_j are connected if rho(y_i,y_j) < 2delta
-	figure;
-	hold on;
+	figure; grid; hold on;
 	N = size(net,2);
-	edges = []; %edges of the delta-net
+    D = size(net,1);
+	
+    edges = []; %edges of the delta-net
 	for i = 1 : N - 1
 		for j = i + 1 : N
 			if rho(net(:,i),net(:,j)) < 2*delta
 				edges = [edges;[i j]];
-				plot(net(1,[i,j]),net(2,[i,j]),'color','k','Linewidth',1);
+               
+                if D == 2
+                    plot(net(1,[i,j]),net(2,[i,j]),'color','b','Linewidth',0.5);
+                elseif D == 3
+                    plot3(net(1,[i,j]),net(2,[i,j]),net(3,[i,j]),'color','b','Linewidth',0.5);
+                end
+                
 			end
 		end
 	end
@@ -98,12 +105,17 @@ function [net_info] = delta_net(init,delta,rho,is_random)
 		end
     end
 
+    %set good view for 3D
+    if (D == 3)
+        view(3); 
+    end
     
  	net_info.net = net;
  	net_info.neighbors = neighbors;
  	net_info.edges = edges;
     net_info.deg = deg;
 	net_info.max_deg = max_deg;
+    
 
 	save('current_delta_net.mat','net','neighbors','edges','deg','max_deg');
 end

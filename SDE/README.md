@@ -3,18 +3,18 @@
 
 This repository is an implementation of the ATLAS algorithm from Crosskey and
 Maggioni's paper [ATLAS: A Geometric Approach to Learning High-Dimensional
-Stochastic Systems Near Manifolds](https://epubs.siam.org/doi/abs/10.1137/140970951). For a more in depth description of the code, see the [User Guide](doc/ATLAS_UserGuide.pdf).
+Stochastic Systems Near Manifolds](https://epubs.siam.org/doi/abs/10.1137/140970951) (arXiv link [here](https://arxiv.org/abs/1404.0667)), published in the SIAM Multiscale Modeling and Simulation journal. For a more in depth description of the code, see the [User Guide](doc/ATLAS_UserGuide.pdf).
 
 ## Prerequisites
 
-The codes are all written in MATLAB, and running the code just requires downloading
+The codes are all written in MATLAB, and running the code requires downloading
 the src directory and adding the src directory to your matlab path.
 
 ## Overview
 
 The main files to run the code are:
 
-**atlas_driver.m** - choose from parameters, set up examples from Crosskey,
+**atlas_driver.m** - main driver file for atlas, user can set atlas parameters for their own system or set up examples from Crosskey,
 Maggioni paper
 
 **construction.m** - construct the ATLAS for the given example
@@ -23,12 +23,13 @@ Maggioni paper
 
 The current files for testing output are:
 
-**run_atlas_tpaths2d.m** - (For 2D potential example below) Computes average
-transition times between the potential wells of the original simulator and the
-ATLAS simulator
+**run_atlas_tpaths2d.m** - Computes the average transition times for the learned simulator and the
+original simulator applied to the 2D example with the smooth three-well
+potential from Crosskey and Maggioni(see example below).
 
-**makestats_tpaths2d.m** - (For 2D potential example below) Plots the bar graph of
-transition averages from run_atlas_2paths2d.m
+
+**makestats_tpaths2d.m** - Plots the bar graphs of the average transition times
+using the output of **run_atlas_tpaths2d.m**
 
 ## Running ATLAS
 
@@ -36,27 +37,25 @@ transition averages from run_atlas_2paths2d.m
 
 #### Problem-Specific inputs
 
-The user should have an input SDE of form dx = f(x) dt + dW in R^D with a known timestep and metric 'rho' for the ambient space. In particular, the user must input:
+The user should have an input SDE of form dx = f(x) dt + dW in R^D with a known timestep and metric 'rho' for the ambient space. In particular, the user must prove:
 
-* **f** - function with inputs as column vectors in R^D, outputs as column vectors in
-R^D
+* **f** - The deterministic forcing in the SDE above, f:R^D -> R^D, f(x) = y, where x and y are column vectors. Example: f(x) = grad(U(x)), where U: R^D -> R is a differentiable potential function such as the smooth two-well potential U(x) = 16x^2(x-1)^2 for D = 1.
 
-* **rho** - metric in the space of th input simulator. Example: euclidean distance, rho = @(x,y) norm(x -
+* **rho** - metric in the space of the input simulator. Example: euclidean distance, rho = @(x,y) norm(x -
 y)
 
-* **d** - intrinsic dimension of the manifold. All ATLAS outputs will be in R^d.
+* **d** - intrinsic dimension of the manifold. The learned simulator will run in R^d.
 
 * **dt_sim** - original time-step of the input SDE
 
 
-#### ATLAS inputs
+#### initial parameters for ATLAS
 
 * **delta** - spatial homogenization scale. ATLAS is more accurate and more
 computationally intensive for smaller delta values.
 
-* **t_0** - simulation time for the short paths run by ATLAS. Should be chosen such
-trajectories running the original simulator for time t_0 are delta away from
-the starting location on average.
+* **t_0** - the simulation time for the short trajectories of the original simulator. t_0  should be chosen such that these trajectories at time t_0 are on average at distance delta from their starting points
+
 
 * **m** - the number of landmarks for each net point. m should be >= d, accuracy and
 computational complexity increase as m increases.
