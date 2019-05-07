@@ -1,4 +1,4 @@
-function atlas_driver(example,load_net)
+function atlas_driver(example)
 %%%%Main file for setting ATLAS parameters
 
 %S - Simulator, deafult: 1d maggioni example, see simulator.m
@@ -17,9 +17,7 @@ seed = 1;
 fprintf("RNG seed: %d\n",seed);
 rng(seed);
 
-%Default example is 1, Default is to not load up delta_net
 if ~exist('example','var') example = 1; end
-if ~exist('load_net','var') load_net = false; end
 
 %Input example determines which system is used for ATLAS
 switch example
@@ -104,7 +102,7 @@ switch example
 	    
 	delta_net(init,delta,rho);
 	params.net_info = load('current_delta_net.mat');	
-   
+   %%
 	params.d = d;	
 	params.rho = rho;
 	params.delta = delta;
@@ -139,7 +137,9 @@ end
 %Example 1: 1d smooth potential
 %%%%%%%%
 function out = example_1(x)
-    %example, 1d smooth potential
+%%
+%%example, 1d smooth potential%
+    
 	out = 16*x^2*(x-1)^2;
 end
 function out = example_1_grad(x)

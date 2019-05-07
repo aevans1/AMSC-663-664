@@ -34,9 +34,14 @@ function [path_end,chart_end,Y,chart] = learned_simulator(Yzero,m,dt,T,new_S,nei
 %			Y- d x (T\dt) array of most recent simulations (for m = 1 case)
 %			chart- 1 x (T\dt) array of chart locations from Y (for m = 1 case)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%optional parameters, for plotting
+%%%optional parameters
+
+	%plotting
 	if ~exist('plot_sim','var'), plot_sim = false; end
 	if ~exist('plot_points','var'), plot_points = false; end
+
+	%storing(or not) long trajectories
+	trajectory = false; %if true, the trajectory Y will be stored
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	
 	N = floor(T/dt);
@@ -44,9 +49,15 @@ function [path_end,chart_end,Y,chart] = learned_simulator(Yzero,m,dt,T,new_S,nei
 	%path_end will store m column vectors, same dimension as Yzero,
 	%collection of endpoints of all simulated paths
 	path_end = zeros(d,m); 	
-	
-	Y = zeros(d,N+1); 
-	Y(:,1) = Yzero;
+
+	if trajectory
+		Y = zeros(d,N+1); 
+		Y(:,1) = Yzero;
+	else
+		%no tracking
+		y = Yzero;
+		Y = [];
+	end
 
 	c = new_S.c;
 	b = new_S.b;
@@ -64,7 +75,6 @@ function [path_end,chart_end,Y,chart] = learned_simulator(Yzero,m,dt,T,new_S,nei
 		for step = 1:N
 			
 			%%%Take a timestep in the ATLAS learned siulator
-			y = Y(:,step);
 			i = chart(step);
 
 			num_nbr = deg(i);
@@ -95,13 +105,17 @@ function [path_end,chart_end,Y,chart] = learned_simulator(Yzero,m,dt,T,new_S,nei
 			end
 		
 		  	chart(step+1) = j;
-			Y(:,step+1) = y;
+		
+			%only store if path isn't too long
+			if trajectory
+				Y(:,step+1) = y;
+			end
 
 		end
 	
 		%%%store terminal point in path_end, and store the last chart visited
 		%by that path
-  		path_end(:,k) = Y(:,N+1); 
+  		path_end(:,k) = y;
 		chart_end(k) = chart(N+1);	
     end
 	

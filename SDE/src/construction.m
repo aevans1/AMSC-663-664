@@ -82,6 +82,11 @@ b = zeros(d,N); 							% collection of drift coeff. for local SDEs
 sigma = zeros(d,d,N); 						% collection of diffusion matrices for local SDEs;
 mu = zeros(d,N,N); 							%mu is the collection of average landmark for each chart
 
+%%%For testing spread of trajectories around each net point (see
+%'test_dist_to_net')
+net_means = zeros(1,N);
+net_vars = zeros(1,N);
+
 %%%Create landmarks
 for n = 1:N
     %generate m paths, save endpoints for delta_net point n
@@ -113,7 +118,11 @@ for n = 1:N
 	%%%Optional: run tests per net point n, see comments in test functions
 	if testing
     	test_landmark_index(n,m,N,neighbors,deg,A,Ln)
-		test_dist_to_net(n,D,net,delta,X)
+		[mean_dist,var_dist] = test_dist_to_net(n,D,net,delta,X);
+		net_means(n) = mean_dist;
+		net_vars(n) = var_dist;
+		save('distance_checks.mat','net_means','net_vars');
+
 	end
     
     %%%Step 2:Create chart for net point
@@ -137,7 +146,6 @@ for n = 1:N
 	
 	embed_L(:,1:(m+1)*(num_nbr + 1),n) = embed_Ln;
 	embed_X(:,:,n) = embed_Xn;
-		       
    
 	%%%Step 3:Construct local constant coefficient SDE simulator at net point
 	%%%		dXt = b_n dXt + sigma_n dW
@@ -160,6 +168,10 @@ if timestamp_save
 	save(filename);
 end
 save('current_atlas.mat','new_S','L','embed_L');
+
+if testing
+	save('distance_checks.mat','net_means','net_vars');
+end
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -186,7 +198,8 @@ function [T,c,b,sigma,mu] = construct_local_SDE(n,net_info,embed_L,embed_X,p,t0,
 %			 c(:,i,j) is a d x 1 vector, isj-th neighbor of net point n,
 %		     expressed in chart n coords(LMDS wrt n's landmarks)
 %		b - d X 1 vector, drift coordinate for n's local SDE
-%		sigma - d x d array, diffusion coords for n's local SDE		
+%		sigma - d x d x N array, sigma(:,:,n) is d x d array, diffusion coords
+%		for n's local SDE, updated each iteration of construct_local_SDE		
 %		mu - d X N X N array containing mean landmarks of local neighboring charts,
 %		     updated each iteration of construct_local_SDE,
 %		    mu(:,i,j) is a d x 1 vector, the average of chart j's landmarks
@@ -275,15 +288,20 @@ for i = 1:num_nbr
 end
 end
 
-function test_dist_to_net(n,D,net,delta,X)
+function [mean_dist,var_dist] = test_dist_to_net(n,D,net,delta,X)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %t0 simulation time should be chosen so that
 %E[X - net(:,n)] ~ delta, likewise for landmarks L
 if D == 1
-	dist_to_net =  mean(abs(X(:,:,n) - net(:,n)),2);
+	distances = abs(X(:,:,n) - net(:,n));
 else
-	dist_to_net =  mean(vecnorm(X(:,:,n) - net(:,n)),2);
+	distances = vecnorm(X(:,:,n) - net(:,n));
 end
-fprintf("avg distance from X to net point n:	%f",dist_to_net);
-fprintf("	delta: 	%f\n",delta);
+
+mean_dist =  mean(distances,2);
+var_dist =  var(distances,0,2);
+
+fprintf("avg distance from X to net point n:	%f \n",mean_dist);
+fprintf("var of distances from X to net point n:	%f \n",var_dist);
+fprintf("delta: 	%f\n",delta);
 end

@@ -39,6 +39,7 @@ num_nbr = deg(i);
 net_nbr = [i neighbors(i,1:num_nbr)];
 
 
+%%%Find closest chart to y in chart i coords	
 C = squeeze(c(:,i,net_nbr)); %collect centers for chart i
 [~,min_dist] = min(sum((x - C).^2,1));
 j = net_nbr(min_dist);

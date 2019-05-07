@@ -63,6 +63,87 @@ function [path_end,regions_visited,X] = simulator(Xzero,m,T,f,dt,regions,dist,pl
 		plot_path_end(path_end);
 	end
 
+if opts.transition_paths = true
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Original Simulator
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %Compute SDE until time dt*N
+    %initialize region list, transition tracking
+    [dmin,imin] = min(sum((Xzero - regions).^2,1));
+    if dmin < dist_sq
+        init_region = imin;
+    else
+        init_region = 0;
+    end
+    
+    original_switches = []; %list of all switches between regions and corresponding times
+    switch_count = 0; %tracks number of transitions
+    
+    tic;
+    
+    %simulate until certain number of transitions are observed
+    while switch_count < max_switches
+        t = 0;
+        flag = sign(init_region);
+        step = 0; %number of steps iterated
+        region = init_region;
+        
+        
+        x = Xzero;
+     
+        %restart simulation once p2 is reached
+        while region~=2
+            step = step + 1; %number of simulation steps before restart
+            
+            %Take Euler-Maruyama step
+            dW = sqrt(dt_sim)*randn(3,1); %Brownian random increment in R^D
+            x = x + switch_drift(x)*dt_sim + sq_noise*dW;
+            
+            %For now: not tracking charts, just tracking regions
+            [~,region_check] = min(sum((x - regions).^2,1));
+            
+            %only assign a region value if the point is close enough
+            if region_check < dist_sq
+                new_region = region_check;
+            else
+                new_region = 0;
+            end
+            
+            if new_region > 0
+                if flag == 0
+                    region = new_region;
+                    t = 0;
+                    flag = 1;
+                else
+                    if region ~= new_region
+                        
+                        %we've observed a transition!
+                        switch_count = switch_count + 1;
+                        original_switches = [original_switches;region,new_region,t];
+                        t = 0;
+                        region = new_region;
+                        save('original_tswitch.mat','original_switches','noise');
+                        fprintf("transition %d \n",switch_count);
+                    end
+                end
+            end
+            t = t+dt_sim;
+            
+            if mod(step,100000000) == 0
+                fprintf("step %d \n",step);
+                % 		fprintf("step %d of %f \n",step,N);
+                toc;
+            end
+            
+            %increment time-counting step
+            
+            
+        end
+        toc;
+    end
+    original_time = toc;
+    %
+
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Helper functions
