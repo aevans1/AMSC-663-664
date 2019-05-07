@@ -102,7 +102,7 @@ switch example
 	    
 	delta_net(init,delta,rho);
 	params.net_info = load('current_delta_net.mat');	
-   %%
+   
 	params.d = d;	
 	params.rho = rho;
 	params.delta = delta;

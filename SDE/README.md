@@ -54,7 +54,7 @@ y)
 * **delta** - spatial homogenization scale. ATLAS is more accurate and more
 computationally intensive for smaller delta values.
 
-* **t_0** - the simulation time for the short trajectories of the original simulator. t_0  should be chosen such that these trajectories at time t_0 are on average at distance delta from their starting points.
+* **t_0** - the simulation time for the short trajectories of the original simulator. t_0  should be chosen such that these trajectories at time t_0 are on average at distance delta from their starting points
 
 
 * **m** - the number of landmarks for each net point. m should be >= d, accuracy and

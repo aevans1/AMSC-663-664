@@ -13,7 +13,7 @@ function [net_info] = delta_net(init,delta,rho,is_random)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Optional parameters
 
-%%%Default mode is 'not random'
+%%%Default mode is random
 	if ~exist('is_random','var'), is_random = true; end
 
 	%%%Random mode shuffles initial point set
