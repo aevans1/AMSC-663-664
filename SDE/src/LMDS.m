@@ -25,7 +25,7 @@ function [embed_L,embed_Z] = LMDS(L,Z,rho,d)
     Z = Z - meanvec;
         
 	square_dist = compute_square_dist(L,rho);
-    
+   
 	%%%Step 1: MDS for landmarks L
 	%TODO: comment about output of this
 	[embed_L,V,eigvals] = MDS(square_dist,d);

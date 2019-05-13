@@ -24,12 +24,17 @@ function transition_paths_driver()
 %Xzero = p1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%Re-write the values of the below lines to input parameters
-regions = [];
-dist = [];
-Xzero = [];
-T=[];
+
+p1 = [0;0];
+p2 = [1.5;0];
+p3 = [0.8;1.05];
+regions = [p1,p2,p3];
+dist = 0.25;
+Xzero = [0.74;1.67];
+T=10000; %first point of the delta net for this example
 %%save parameters into .mat file for use with 'transition_paths.m'
 save('transition_params.mat');
+
 
 
 end

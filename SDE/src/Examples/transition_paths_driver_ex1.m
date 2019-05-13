@@ -24,10 +24,10 @@ function transition_paths_driver()
 %Xzero = p1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%Re-write the values of the below lines to input parameters
-regions = [];
-dist = [];
-Xzero = [];
-T=[];
+regions = [0 1];
+dist = 0.25;
+Xzero = 0.2;
+T=50000;
 %%save parameters into .mat file for use with 'transition_paths.m'
 save('transition_params.mat');
 

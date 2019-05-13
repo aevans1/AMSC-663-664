@@ -7,7 +7,7 @@ function atlas_driver(example)
 
 %Parameters:
 %delta - homogenization scale, affects density of sample net
-%t_0 - simulation time for short paths (default t_0 = delta^2)
+%t0 - simulation time for short paths (default t0 = delta^2)
 %m - num landmarks for each landmark(m >= d, should be O(d))
 %p - num sample paths for each point in net(should be O(delta^-4))
 %dt - time step for atlas (default dt = delta/5, should be
@@ -33,16 +33,28 @@ switch example
 	
 	m = 5;
 	p = 10000;
-	t_0 = delta^2;
+	t0 = delta^2;
 
-	dt = t_0/5;
+	dt = t0/5;
     
 	%Set up parameters for original simulator
 	f = @(x) example_1_grad(x);
 	dt_sim = 0.005; %timestep for original simulator
 	S = @(Xzero,m,T) simulator(Xzero,m,T,f,dt_sim);
 
-	case 2
+       
+    params.d = d;	
+	params.rho = rho;
+	params.delta = delta;
+	params.m = m;
+	params.p = p;
+	params.t0 = t0;
+	params.dt = dt;
+	params.S = S;
+	params.dt_sim = dt_sim;
+	params.f = f;
+
+    case 2
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	%Example 2: Rough 1-dimensional Potential from ATLAS paper, ex. 5.2.2
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -51,11 +63,10 @@ switch example
 	delta = 0.1; 
 	init = [-0.3:0.01:1.3]; %initial point set for generating delta-net
 	
-	S = @simulator;
 	m = 5;
 	p = 10000;
-	t_0 = 0.02;
-	dt = t_0/5;
+	t0 = 0.02;
+	dt = t0/5;
 	
 	%Set up parameters for original simulator
 	f = @(x) example_2_grad(x);
@@ -65,9 +76,20 @@ switch example
 	%As in the paper, run initial point set through simulator for time t= 0.01
 	for i = 1:length(init)
 		init(:,i) = S(init(:,i),1,0.01);
-	end
+    end
 
-	case 3
+    params.d = d;	
+	params.rho = rho;
+	params.delta = delta;
+	params.m = m;
+	params.p = p;
+	params.t0 = t0;
+	params.dt = dt;
+	params.S = S;
+	params.dt_sim = dt_sim;
+	params.f = f;
+
+    case 3
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	%Example 3: Smooth 2-D Potential from ATLAS paper, ex. 5.3.1
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -99,9 +121,6 @@ switch example
 	threshold = [Z < 10; Z < 10];
 	init = threshold.*temp_init;
 	init = init(:,any(init,1)); %removing zero columns
-	    
-	delta_net(init,delta,rho);
-	params.net_info = load('current_delta_net.mat');	
    
 	params.d = d;	
 	params.rho = rho;
@@ -119,15 +138,26 @@ switch example
 	return;
 end
 
+    %Create delta net
+    delta_net(init,delta,rho);
+	params.net_info = load('current_delta_net.mat');	
+
+
 fprintf("Running atlas for example %d ... \n ", example);
 
 
-if example == 1 || example == 2
-	dim1potential_test(example,new_S,net);
-end
 
 save('current_driver.mat','params');
 construction();
+
+
+
+if example == 1 || example == 2
+    load('current_atlas.mat');
+    load('current_delta_net.mat');
+	dim1potential_test(example,new_S,net);
+end
+
 
 %filename =[datestr(now, 'dd_mmm_yyyy_HH_MM'),'_','d',num2str(d),'_','atlas_driver'];
 %save(filename);
@@ -226,8 +256,8 @@ function dim1potential_test(example,new_S,net)
 	end
 
  	test_set = [-0.25:0.01:1.25];
- 	B = new_S.B;
-	Sigma = new_S.Sigma;
+ 	B = new_S.b;
+	Sigma = new_S.sigma;
  	Phi = new_S.Phi;
  	
  	%%%effective potential plotting in 1d
@@ -244,8 +274,8 @@ function dim1potential_test(example,new_S,net)
  	
  	    % diffusion coefficent B approximates -grad U, so use -B
 		% dividing by Phi, reversing 1d LMDS mapping, i.e. divide by +-1
- 		diffs(k) = -B(:,i)/Phi(i).Phi;
-		sigma(k) = Sigma(:,:,i)/Phi(i).Phi;
+ 		diffs(k) = -B(:,i)/Phi(i);
+		sigma(k) = Sigma(:,:,i)/Phi(i);
 	end
 
  	figure

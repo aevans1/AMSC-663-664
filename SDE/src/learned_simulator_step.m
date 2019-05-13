@@ -40,7 +40,10 @@ net_nbr = [i neighbors(i,1:num_nbr)];
 
 
 %%%Find closest chart to y in chart i coords	
-C = squeeze(c(:,i,net_nbr)); %collect centers for chart i
+%NOTE: squeeze works incorrectly in 1d, using reshape instead
+%C = squeeze(c(:,i,net_nbr)); 
+C = reshape(c(:,i,net_nbr),d,num_nbr + 1); %collect centers for chart i
+
 [~,min_dist] = min(sum((x - C).^2,1));
 j = net_nbr(min_dist);
 

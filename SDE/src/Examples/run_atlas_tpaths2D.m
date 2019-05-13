@@ -42,6 +42,12 @@ drawnow;
 p = 1;
 T = 10000;
 
+
+
+%TESTING different value of dt 
+% fprintf("TESTING: changing dt \n");
+% dt = 0.02;
+
 fprintf("Transition path tracking \n");
 global p1 p2 p3
 p1 = [0;0];

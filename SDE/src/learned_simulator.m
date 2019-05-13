@@ -82,8 +82,9 @@ function [path_end,chart_end,Y,chart] = learned_simulator(Yzero,m,dt,T,new_S,nei
 			
 			
 			%%%Find closest chart to y in chart i coords	
-			C = squeeze(c(:,i,net_nbr)); %collect centers for chart i
-			[~,min_dist] = min(sum((y - C).^2,1));
+			%C = squeeze(c(:,i,net_nbr)); %collect centers for chart i
+			C = reshape(c(:,i,net_nbr),d,num_nbr + 1);
+            [~,min_dist] = min(sum((y - C).^2,1));
 			j = net_nbr(min_dist);
 			
 			if j ~= i

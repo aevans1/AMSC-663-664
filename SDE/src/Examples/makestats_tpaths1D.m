@@ -1,4 +1,4 @@
-function makestats_tpaths2D()
+function makestats_tpaths1D()
 %TODO: comments
 
 %%%read in switch times from ATLAS
@@ -9,7 +9,7 @@ learned_switches = data.learned_switches;
 data = load('original_tswitch.mat');
 original_switches = data.original_switches;
 
-num_regions = 3;
+num_regions = 2;
 %%
 fprintf('Original\n');
 Tbar0 = MeanSwitchTimes(num_regions,original_switches);
@@ -20,7 +20,7 @@ Tbar = MeanSwitchTimes(num_regions,learned_switches);
 figure(2); clf; hold on;
 bar([Tbar,Tbar0]);
 xticks([1:6]);
-xticklabels({'1->2','1->3','2->1','2->3','3->1','3->2'});
+xticklabels({'1->2','2->1'});
 set(gca,'Fontsize',20);
 ylabel('Mean transition time','Fontsize',20);
 legend('Original','ATLAS');
