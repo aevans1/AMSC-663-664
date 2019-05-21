@@ -284,12 +284,12 @@ function dim1potential_test(example,new_S,net)
 	title('potentials');
 
 	n = round(length(test_set)/2);
-	piecewise_integrate(0.01,0.5,1,diffs);
- 	hold on
-	plot(test_set,true_U);
-	legend('$\hat{U}(x)$','U(x)');
- 	set(legend,'Interpreter','latex');
-	
+	plot(test_set,true_U,'LineWidth',4);
+    hold on
+    piecewise_integrate(0.01,0.5,1,diffs);
+	hleg1 = legend('$\hat{U}(x)$','U(x)');
+ 	set(hleg1,'Interpreter','latex');
+    
 	figure
 	title('diffusion coeffs');
 	fprintf("Plotting approximated sigma against true sigma \n");

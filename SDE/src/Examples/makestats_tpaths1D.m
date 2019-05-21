@@ -22,7 +22,7 @@ bar([Tbar,Tbar0]);
 xticks([1:6]);
 xticklabels({'1->2','2->1'});
 set(gca,'Fontsize',20);
-ylabel('Mean transition time','Fontsize',20);
+ylabel('Mean Switching Time','Fontsize',20);
 legend('Original','ATLAS');
 
 end

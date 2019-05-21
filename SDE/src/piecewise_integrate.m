@@ -32,7 +32,7 @@ while mid - i > 1 && mid + i < n
     i = i + 1;
 end
 
-plot(x,y);
+plot(x,y,'LineWidth',2);
 
 end
 
