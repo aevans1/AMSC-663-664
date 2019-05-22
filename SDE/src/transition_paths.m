@@ -224,14 +224,30 @@ save('learned_tswitch.mat','learned_switches');
 %%Save switch data
 end
 
-function [switch_times,paths] = switch_data(X,regions,dist,dt,T)
-%TODO:comment
+function [switch_times] = switch_data(X,regions,dist,dt,T)
 %Given trajectory data, calculates paths among regions list,
 %finds switch_times betwen regions
+%inputs:
+%       X - trajectory data, d X (T/dt) array, col i is trajectory at time
+%           dt * i
+%       regions - d x num_regions array, each column corresponds to an
+%               attractor of the underlying systems
+%       dist - scalar defining region around attractors
+%       dt - timestep
+%       T - total time of trajectory
+%outputs:
+%       switch_times - array, each row has values [old_region new_region
+%           t] corresponding indices to the regions switched and the time
+%               t the switch took
+%
 
+%%%Initialize
 num_steps = floor(T/dt);
 dist_sq = dist^2;
 path_regions = zeros(1,num_steps);
+
+%%%At each timestep, find the closest region index imin
+%%%if trajectory is close enough, count this as a new region
 for n = 1:num_steps
     [dmin,imin] = min(sum((regions - X(:,n)).^2,1));
     if dmin < dist_sq
@@ -241,21 +257,37 @@ for n = 1:num_steps
     end
 end
 
+%%%Compute the times between switches in the path list
 switch_times = calculate_switches(path_regions,dt,num_steps);
 end
 
 function switch_times = calculate_switches(path_regions,dt,num_steps)
-%TODO:comment, use transition data file
-
+%Compute switching times given a list of regions switched over timesteps
+%with prescribed timestep dt
+%inputs:
+%       path_regions - 1 x num_steps array, entry i is the index of a
+%               region visited at time dt*i
+%       dt - timestep
+%       num_steps - length of path_regions
+%outputs:
+%       switch_times - array, each row has values [old_region new_region
+%           t] corresponding indices to the regions switched and the time
+%               t the switch took
+%
+%%%Initialize
 switch_times=[];
-switch_count = 0;
-index = path_regions(1);
-flag = sign(index);
+switch_count = 0; %number of switches
+index = path_regions(1); 
+flag = sign(index); %flag = 0 means a region hasn't been visited yet
 t = 0;
 
 for n = 2:num_steps
     new_index = path_regions(n);
-    if new_index > 0
+    
+    
+    %if new region is visited, restart the timer
+    %   if we've left region 0, count a switch and update switch list
+    if new_index > 0              
         if flag == 0
             index = new_index;
             t = 0;
@@ -275,8 +307,15 @@ end
 end
 
 function plot_delta_net(net,edges,D)
-%TODO:comments
 %plot a 2d or 3d delta-net
+%inputs:
+%       net: D x n array, each column a net point vector in R^D
+%            columns correspond to a delta_net see 'delta_net.m'
+%       edges: array, each row corresponds to an edge in the delta-net
+%       'net'
+%        D: dimension of the ambient space
+%output: plot of delta-net
+
 
 figure; clf; hold on;
 set(gca,'Fontsize',20);

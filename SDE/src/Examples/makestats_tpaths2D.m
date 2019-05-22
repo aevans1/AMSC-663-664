@@ -1,5 +1,11 @@
 function makestats_tpaths2D()
-%TODO: comments
+%Load up transition data from 'transition_paths.m' and makes bar graphs
+%comparing ATLAS transition data with original simulator transition data
+
+%NOTE: this file is written in the
+%examples 3 for atlas_driver.m file which has 3 regions
+
+%% Read in Data
 
 %%%read in switch times from ATLAS
 data = load('learned_tswitch.mat');
@@ -10,7 +16,7 @@ data = load('original_tswitch.mat');
 original_switches = data.original_switches;
 
 num_regions = 3;
-%%
+%% Plot Bar Graphs
 fprintf('Original\n');
 Tbar0 = MeanSwitchTimes(num_regions,original_switches);
 

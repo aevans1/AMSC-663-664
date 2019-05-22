@@ -23,17 +23,22 @@ function delta_net_test(net_params)
 
 		rho = @(p_1,p_2) norm(p_1 - p_2);
 		delta = 0.5;
-		[net,neighbors] = delta_net(init,delta,rho);
+		[net_info] = delta_net(init,delta,rho);
 		
+        
+        net = net_info.net;
+        neighbors = net_info.neighbors;
+        deg = net_info.deg;
 		%save the above for later, just in case
 		net_params.net = net;
 		net_params.neighbors = neighbors;
 		net_params.rho = rho;
 		net_params.delta = delta;
-		save('delta_net_test');
+		save('delta_net_test','net_params');
 	else
 		net = net_params.net;
 		neighbors = net_params.neighbors;
+        deg = net_params.deg;
 		rho = net_params.rho;
 		delta = net_params.delta;
 	fprintf("Running test for user input delta_net \n");
@@ -42,10 +47,7 @@ function delta_net_test(net_params)
 	
 	N = size(net,2);
 	
-	plot_net(net,neighbors);
-	%TODO: write a plot function for delta net and neighbors
-	%2D Example, plot for fun
-	
+	plot_net(net,neighbors,deg);
 	
 	%% Test 1: Delta Spacing
 	%Pass: all of the net points are at least delta away from each other
@@ -78,22 +80,15 @@ function delta_net_test(net_params)
 	%above, details in error statement
 	n = 1;
 	while (n < N)
-		net_nbr = neighbors(n).nbr; %global indices of neighbors of net point idx n
-		organized_neighbors = ( all(net(:,net_nbr(1)) == net(:,n)) );
-		try
-			assert(organized_neighbors);
-		catch
-			fprintf(['Error 2: net point %d is not listed as its first '...
-			'neighbor \n'],n);
-		end
-		num_nbr = length(net_nbr);
+		net_nbr = neighbors(n,1:deg(n)); %global indices of neighbors of net point idx n
+ 		num_nbr = deg(n);
 		for i = 2:num_nbr
 			m = net_nbr(i); %global index of net point nbr
 			spaced_neighbors = (rho(net(:,n),net(:,m)) < 2*delta);
 			try
 				assert(spaced_neighbors);
 			catch
-				fprintf(['Error 3: net points %d and %d are neighbors but are too'...
+				fprintf(['Error 2: net points %d and %d are neighbors but are too'...
 				' far \n'],n,m);
 			end
 		end
@@ -114,7 +109,7 @@ function delta_net_test(net_params)
 	delta_cover = true;
 	n = 1;
 	while (n < N)
-		net_nbr = neighbors(n).nbr;
+		net_nbr = neighbors(n,:);
 		num_nbr = length(net_nbr);
 		assert(num_nbr > 1);
 		n = n + 1;
@@ -143,7 +138,7 @@ function is_far = far(x,net,delta,rho)
 		end
 	end
 
-function plot_net(net,neighbors)
+function plot_net(net,neighbors,deg)
 	D = size(net,1); %dimension of vectors in the net
 	switch D
 			case 1
@@ -159,8 +154,8 @@ function plot_net(net,neighbors)
 				return
 	end	
 	for n = 1:size(net,2)
-		nbrs = neighbors(n).nbr;
-		num_nbr = size(nbrs,2);
+		nbrs = neighbors(n,1:deg(n));
+		num_nbr = deg(n);
 		for i = 1:num_nbr
 			nbr = nbrs(i);
 			plot_array = net(:,[n nbr]);

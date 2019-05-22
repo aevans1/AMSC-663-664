@@ -1,6 +1,6 @@
 %Implemesntation of Landmark Multi-Dimensional Scaling for a given set of
 %Landmarks and Data
-function [embed_L,embed_Z] = LMDS(L,Z,rho,d)
+function [embed_L,embed_Z] = LMDS(L,Z,rho,d,normalize)
 %inputs:
 %	L - set of landmarks for Z, array with columns in R^D
 %		as landmark vectors
@@ -9,12 +9,20 @@ function [embed_L,embed_Z] = LMDS(L,Z,rho,d)
 %	rho - given distance function
 %	d - intrinsic dimension, LMDS projects columns of
 %					Z,L onto R^d
+%   normalize - boolean, true -> algorithm applies PCA to normalize output
 %outputs:
 %   embed_L - MDS output for landmarks, array with
 %					columns in $\R^d$ as projected landmark vectors
 %   embed_Z - projected $Z$ data, array with columns
 %					in $\R^d$ as projected data vectors
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%	
+%Adjust for extra parameters
+
+%By default, normalize output via PCA
+if ~exist('normalize','var')
+    normalize = true; 
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	%D = size(L,1); %each column of L is a landmark vector in R^D
 	m = size(L,2); %number of landmark vectors
 	p = size(Z,2); %number of data vectors
@@ -45,12 +53,16 @@ function [embed_L,embed_Z] = LMDS(L,Z,rho,d)
 		end
 		embed_Z(:,i) = (-1/2)*pinv_L*(dist_z - mean_square_dist);
     end
-     	
-    data = [embed_L embed_Z];
-    PCA_data = PCA(data,d);
-    embed_L = PCA_data(:,1:size(L,2));
-    embed_Z = PCA_data(:,size(L,2) + 1 : end);
     
+    
+    if normalize
+        %%%Step 3: Normalize data by applying PCA
+        data = [embed_L embed_Z];
+        PCA_data = PCA(data,d);
+        embed_L = PCA_data(:,1:size(L,2));
+        embed_Z = PCA_data(:,size(L,2) + 1 : end);
+    end
+
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [projection,eigvecs,eigvals] = PCA(X,d)
@@ -105,7 +117,22 @@ function [scaling,V,eigvals] = MDS(square_dist,d)
     if isempty(eigvals)
         fprintf("landmark sq. dist matrix has no positive eigvals!");
     end
+%     [lam,isort] = sort(diag(E),'descend');
+% V = V(:,isort);
+% ind = find(lam > 0);
+% if isempty(ind)
+%     fprintf('The landmark distance squared matrix has no positive eigenvalues\n');
+%     return;
+% end
+% kplus = min(k,length(ind));
+% lamk = lam(1 : kplus);
+
+    
+    
+    
   	V = V(:,reduced_ind);
+    size(eigvals)
+    size(V.')
 	scaling =  diag(eigvals)^(1/2)*V.';
 end
 

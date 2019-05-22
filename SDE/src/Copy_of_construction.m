@@ -64,10 +64,9 @@ max_deg = net_info.max_deg;
 
 %%% Flags, extra parameters go here
 timestamp_save = false; %if true, saves a mat file with timestamp
-testing = false; %if true, runs various test blocks of code in file
+testing = true; %if true, runs various test blocks of code in file
 vary_t0 = false; %if true, allow for varying t0 values
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 %% Main Code
 
 %%%Initialize arrays
@@ -87,14 +86,11 @@ sigma = zeros(d,d,N); 						% collection of diffusion matrices for local SDEs;
 mu = zeros(d,N,N); 							%mu is the collection of average landmark for each chart
 
 
-
-%%%TESTING%%%%%%%%%%%%%%%%%%%
-%Option to use varying t0_val chart by chart, current mat file only valid for current
-%%%     gswitch net
+%%%TESTING: using experimentally verified t0_vals, only valid for current
+%%%gswitch net
 if vary_t0
-    load('t0_list.mat','t0_list');
+   load('t0_list.mat','t0_list'); 
 end
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%Create landmarks
 for n = 1:N
@@ -128,35 +124,37 @@ for n = 1:N
         tval = t0_list(n);
     end
     X(:,1:p,n) = S(net(:,n),p,tval);
-    
+
+    %TODO: remove?
     %TESTING%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%Optional: run tests per net point n, see comments in test functions
-    if testing
-        mean_net_dist = diagn_mean_net_dist(n,D,net,delta,t0,X);
-        mean_net_distances(n) = mean_net_dist;
-        
-        new_t0 = t0; %initialize new t0 value at original
-        
-        save('atlas_diagnostics.mat','mean_net_distances','t0_list','n','N');
-    end
-    %     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    %
+%     if testing
+%         mean_net_dist = test_mean_net_dist(n,D,net,delta,t0,X);
+%         mean_net_distances(n) = mean_net_dist;
+%         
+%         new_t0 = t0; %initialize new t0 value at original
+%         
+%         save('atlas_diagnostics.mat','mean_net_distances','t0_list','n','N');
+%     end
+%     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%     
     Xn = X(:,1:p,n);
     
+    
     %%%%Take union of all neighboring landmarks to y_n
-    %   store points from neighboring landmarks as collection of columns %associated to y_n
-    %   local_nbr contains global indices of neighbor net points to netpoint n
+    %%%%store points from neighboring landmarks as collection of columns %associated to y_n
+    %local_nbr contains global indices of neighbor net points to netpoint n
     num_nbr = deg(n);
     local_nbr = neighbors(n,1:num_nbr);
     L(:,1:(m+1)*(num_nbr + 1),n) = reshape(A(:,:, [n local_nbr]),D,(m+1)*(num_nbr + 1));
     Ln = L(:,1:(m+1)*(num_nbr + 1),n);
     
     %TESTING%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    %%%Run tests per net point n, see comments in test functions
+    %%%Optional: run tests per net point n, see comments in test functions
     if testing
         test_landmark_index(n,m,N,neighbors,deg,A,Ln);
     end
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    
     
     
     %%%Step 2:Create chart for net point
@@ -170,6 +168,8 @@ for n = 1:N
         %Here Phi is whatever was multiplied by X's to get 'embedding'
         temp_Xn = Xn - mean([Ln Xn],2);
         local_Phi = embed_Xn(:,1)/temp_Xn(:,1);
+        %local_Phi = embed_Xn(:,1)/Xn(:,1);
+        
     end
     Phi(d,n)= local_Phi;
     
@@ -198,18 +198,22 @@ new_S.sigma = sigma;
 new_S.mu = mu;
 new_S.Phi = Phi;
 
+
 save('current_atlas.mat','new_S','L','embed_L');
 
-if testing
-    %%%Save data collected on simulation distances and new t0 values
-    atlas_diagnostics.mean_net_distances = mean_net_distances;
-    save('current_atlas.mat','atlas_diagnostics','-append');
-    
-    if vary_t0
-        save('current_atlas.mat','t0_list','-append');
-    end
-    
-end
+
+%TODO:remove?
+% 
+% if testing
+%     %%%Save data collected on simulation distances and new t0 values
+%     atlas_diagnostics.mean_net_distances = mean_net_distances;
+%     save('current_atlas.mat','atlas_diagnostics','-append');
+%     
+%     if vary_t0
+%        save('current_atlas.mat','t0_list','-append');
+%     end
+%     
+% end
 
 if timestamp_save
     filename =[datestr(now, 'dd_mmm_yyyy_HH_MM'),'_','d',num2str(d),'_','construction'];
@@ -285,7 +289,7 @@ for i = 1 : num_nbr_self
         j = net_nbr(i);	%global index of neighbor of n
         
         %%%Find embeddings of chart overlaps between chart for net point n and nbr net point j
-        %L_jn is Phi_n(A_n U A_j), the embedding of landmarks for net points n,j in chart n's coordinates
+        %L_jn is Phi324_n(A_n U A_j), the embedding of landmarks for net points n,j in chart n's coordinates
         %L_jn is Phi_j(A_n U A_j), the embedding of landmarks for net points n,j in chart j's coordinates
         
         L_nj = zeros(d,2*m + 2);
@@ -317,21 +321,9 @@ for i = 1 : num_nbr_self
     %end computation of transition maps
 end
 end
-%% Testing and Diagnostic Functions
 
 function test_landmark_index(n,m,N,neighbors,deg,A,Ln)
-%Checking that landmark data struct Ln is properly organized
-%inputs:
-%		n - current net point, function constructs local_SDE for chart n
-%       m - number of landmarks per delta-net point
-%       N - number of points in delta net
-%		neighbors - N x max_deg array, row j is neighbor indices of net	point j
-%		deg - N x 1 vector, entry j is number of neighbors(degree) of net point j
-%		embed_L - LMDS applied to L_n, d x p array
-%		embed_X - LMDS applied to X_n, d x num_nbr array
-%       Ln - D X num_nbr*m array, columns are the landmarks associated with delta net point net(:,n)
-%           as well as the neighbors of net(:,n)
-
+%Checking that Ln data struct is properly organized
 num_nbr = deg(n);
 local_nbr = neighbors(n,1:num_nbr);
 %fprintf("TESTING: index check for landmarks \n");
@@ -343,32 +335,27 @@ for i = 1:num_nbr
 end
 end
 
-function [avg_dist_to_net] = diagn_mean_net_dist(n,D,net,delta,t0,X)
+function [dist_to_net] = test_mean_net_dist(n,D,net,delta,t0,X)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%Diagnostic function to check average distances of sample paths from an
-%   invidiual net point, and compare with delta value
-%Ideally, E[X - net(:,n)] ~ delta
-%If this isn't the case, consider changing the sim time t0
-%
-%inputs:
-%		n - current net point, function constructs local_SDE for chart n
-%		net - D X N array, columns are data points of delta net
-%		t0 - desired time of simulation for each call to S
-%       X - D x p array, sample paths from net point(:,n)
-%               column i is endpoint of a simulation of time t0
-%               starting at delta-net point net(:,n)
-%outputs:
-%		avg_dist_to_net: approx of E[X - net(:,n)]
-
 %TODO: replace euclidean norm with more general norm
-
+%t0 simulation time should be chosen so that
+%E[X - net(:,n)] ~ delta, likewise for landmarks L
 if D == 1
-    avg_dist_to_net =  mean(abs(X(:,:,n) - net(:,n)),2);
+    dist_to_net =  mean(abs(X(:,:,n) - net(:,n)),2);
 else
-    avg_dist_to_net =  mean(vecnorm(X(:,:,n) - net(:,n)),2);
+    dist_to_net =  mean(vecnorm(X(:,:,n) - net(:,n)),2);
 end
-fprintf("avg distance from X to net point n:	%f \n",avg_dist_to_net);
+fprintf("avg distance from X to net point n:	%f \n",dist_to_net);
 fprintf("	delta: 	%f\n",delta);
 fprintf("	t_0: 	%f\n",t0);
+
+% %%%Recompute distance to net, output values
+% if D == 1
+% 	dist_to_net =  mean(abs(X(:,:,n) - net(:,n)),2);
+% else
+% 	dist_to_net =  mean(vecnorm(X(:,:,n) - net(:,n)),2);
+% end
+% fprintf("avg distance from X to net point n:	%f",dist_to_net);
+% fprintf("new t0: %f \n",new_t0);
 
 end
