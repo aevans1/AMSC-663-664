@@ -38,7 +38,7 @@
 *.fls
 *.out
 /SDE/src/Cameron
-/SDE/src/genetic_switch
+#/SDE/src/genetic_switch
 /SDE/src/Archive
 /SDE/bin
 /SDE/data
