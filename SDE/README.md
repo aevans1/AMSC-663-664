@@ -1,5 +1,4 @@
 # ATLAS readme:
-## Work in Progress!
 
 This repository is an implementation of the ATLAS algorithm from Crosskey and
 Maggioni's paper [ATLAS: A Geometric Approach to Learning High-Dimensional
