@@ -131,9 +131,7 @@ function [scaling,V,eigvals] = MDS(square_dist,d)
     
     
   	V = V(:,reduced_ind);
-    size(eigvals)
-    size(V.')
-	scaling =  diag(eigvals)^(1/2)*V.';
+    scaling =  diag(eigvals)^(1/2)*V.';
 end
 
 function [square_dist] = compute_square_dist(X,rho)
