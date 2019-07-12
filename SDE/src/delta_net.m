@@ -1,4 +1,5 @@
 function [net_info] = delta_net(init,delta,rho,is_random)
+
 %sub-samples initial set of points to create a delta-net, following the
 %brute-force method given in section 3.1 of ATLAS paper
 %inputs: init - D X N matrix, set of N vectors in R^d%

@@ -64,19 +64,19 @@ for k = 1:length(bf_ordering)
     %%%Simulate p paths around net point y_n
     X(:,1:p,n) = S(net(:,n),p,new_t0);
     
-    mean_net_dist = test_mean_net_dist(n,D,net,delta,new_t0,X);
-    
+    mean_net_dist = diagn_mean_net_dist(n,D,net,delta,new_t0,X);
+    %%
     %%%Varying t_o values based on how far points go in dynamics
     if mean_net_dist >1.5*delta
         %NOTE:  > 1.5 delta means wall function will be applied ALOT, not good
         
         new_t0 = new_t0/2;
         X(:,1:p,n) = S(net(:,n),p,new_t0);
-        mean_net_dist = test_mean_net_dist(n,D,net,delta,new_t0,X);
+        mean_net_dist = diagn_mean_net_dist(n,D,net,delta,new_t0,X);
     elseif mean_net_dist < 0.5*delta
         new_t0 = 2*new_t0;
         X(:,1:p,n) = S(net(:,n),p,new_t0);
-        mean_net_dist = test_mean_net_dist(n,D,net,delta,new_t0,X);
+        mean_net_dist = diagn_mean_net_dist(n,D,net,delta,new_t0,X);
     end
     
     t0_list(k) = new_t0;
