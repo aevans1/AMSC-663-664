@@ -55,7 +55,8 @@ switch example
 	params.S = S;
 	params.dt_sim = dt_sim;
 	params.f = f;
-
+    params.euclidean = true; %use 2-norm for rho
+    
     case 2
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	%Example 2: Rough 1-dimensional Potential from ATLAS paper, ex. 5.2.2
@@ -92,7 +93,9 @@ switch example
 	params.S = S;
 	params.dt_sim = dt_sim;
 	params.f = f;
-
+    params.euclidean = true; %use 2-norm for rho
+    
+    
     case 3
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	%Example 3: Smooth 2-D Potential from ATLAS paper, ex. 5.3.1
@@ -138,7 +141,8 @@ switch example
 	params.S = S;
 	params.dt_sim = dt_sim;
 	params.f = f;
-
+    params.euclidean = true; %use 2-norm for rho
+    
     otherwise
 	fprintf("enter a number (1-3) \n");
 	return;
@@ -150,12 +154,10 @@ end
 
 
 fprintf("Running atlas for example %d ... \n ", example);
-
-
-
 save('current_driver.mat','params');
-construction();
 
+% Construct ATLAS
+parallel_construction();
 
 
 if example == 1 || example == 2

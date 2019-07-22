@@ -1,0 +1,3 @@
+X = rand(5,500);
+L = X(:,1:50);
+LMDS(L,X,@(x,y) norm(x - y),false,true);
